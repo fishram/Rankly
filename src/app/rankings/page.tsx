@@ -12,27 +12,30 @@ export default function Page() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-4 px-32 mt-10">
+      <div className="max-w-lg mx-auto py-4 px-4 mt-10">
         <p>Error: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-4 px-32 mt-10">
-      <div className="flex flex-row p-3 items-center justify-between">
+    <div className="max-w-lg mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
+      {/* Header and Back Button */}
+      <div className="w-full flex flex-row items-center justify-between px-4">
         <h1 className="text-3xl font-bold">Rankings</h1>
-        <Link href="./" className="btn btn-outline mr-5 px-7">
+        <Link href="./" className="btn btn-outline px-4">
           Back
         </Link>
       </div>
-      <div className="overflow-x-auto">
-        <table className="table w-full">
+
+      {/* Table Container */}
+      <div className="w-full overflow-hidden">
+        <table className="table mx-auto ml-5">
           <thead>
             <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>ELO</th>
+              <th className="whitespace-nowrap">Rank</th>
+              <th className="whitespace-nowrap">Name</th>
+              <th className="whitespace-nowrap">ELO</th>
             </tr>
           </thead>
           <tbody className="text-lg">
@@ -41,7 +44,7 @@ export default function Page() {
               .map((player, index) => (
                 <tr key={player.id}>
                   <td>{index + 1}</td>
-                  <td>{player.name}</td>
+                  <td className="truncate">{player.name}</td>
                   <td>{player.eloScore}</td>
                 </tr>
               ))}

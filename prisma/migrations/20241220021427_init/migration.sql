@@ -1,0 +1,19 @@
+-- CreateTable
+CREATE TABLE "Player" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "eloScore" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Match" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "player1Id" INTEGER NOT NULL,
+    "player2Id" INTEGER NOT NULL,
+    "winnerId" INTEGER,
+    "date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "notes" TEXT,
+    CONSTRAINT "Match_player1Id_fkey" FOREIGN KEY ("player1Id") REFERENCES "Player" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Match_player2Id_fkey" FOREIGN KEY ("player2Id") REFERENCES "Player" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Match_winnerId_fkey" FOREIGN KEY ("winnerId") REFERENCES "Player" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);

@@ -9,11 +9,11 @@ export function useFetchPlayers() {
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const response = await fetch("/api/players");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const res = await fetch("/api/players");
+        if (!res.ok) {
+          throw new Error("Failed to fetch players");
         }
-        const data: Player[] = await response.json();
+        const data = await res.json();
         setPlayers(data);
       } catch (err: any) {
         console.error("Failed to fetch players:", err);
@@ -25,5 +25,5 @@ export function useFetchPlayers() {
     fetchPlayers();
   }, []);
 
-  return { players, loading, error };
+  return { players, loading, error, setPlayers };
 }

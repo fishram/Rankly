@@ -1,0 +1,36 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Player {
+  id       Int    @id @default(autoincrement())
+  name     String
+  eloScore Int
+
+  // Matches where this player is player1
+  matchesAsPlayer1 Match[] @relation("MatchPlayer1")
+
+  // Matches where this player is player2
+  matchesAsPlayer2 Match[] @relation("MatchPlayer2")
+
+  // Matches where this player is winner
+  matchesWon Match[] @relation("MatchWinner")
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  player1Id Int
+  player2Id Int
+  winnerId  Int?
+  date      DateTime @default(now())
+  notes     String?
+
+  player1 Player  @relation("MatchPlayer1", fields: [player1Id], references: [id])
+  player2 Player  @relation("MatchPlayer2", fields: [player2Id], references: [id])
+  winner  Player? @relation("MatchWinner", fields: [winnerId], references: [id])
+}
