@@ -1,18 +1,27 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
+
+
 export async function GET() {
-  const players = await prisma.player.findMany({
-    select: {
-      id: true,
-      name: true,
-      eloScore: true,
-      highestElo: true,
-      wins: true,
-      losses: true,
-    }
-  });
-  return NextResponse.json(players);
+  try {
+    const players = await prisma.player.findMany({
+      select: {
+        id: true,
+        name: true,
+        eloScore: true,
+        highestElo: true,
+        wins: true,
+        losses: true,
+      }
+    });
+    return NextResponse.json(players || []);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch players" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
