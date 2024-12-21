@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Player } from "../types/player";
+import { getErrorMessage } from '../utils/errorHandling';
 
 export function useFetchPlayers() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -11,13 +12,13 @@ export function useFetchPlayers() {
       try {
         const res = await fetch("/api/players");
         if (!res.ok) {
-          throw new Error("Failed to fetch players");
+          throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await res.json();
         setPlayers(data);
       } catch (err: unknown) {
         console.error("Failed to fetch players:", err);
-        setError(err instanceof Error ? err.message : "An unknown error occurred");
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }

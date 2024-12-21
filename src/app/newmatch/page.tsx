@@ -5,9 +5,12 @@ import { useFetchPlayers } from "../hooks/useFetchPlayers";
 import { useState, useEffect } from "react";
 import { Player } from "../types/player";
 import calculateElo from "../../../lib/calculateElo";
+import ErrorDisplay from "../components/ErrorDisplay";
+import { useKFactor } from "../hooks/useKFactor";
 
 export default function Page() {
   const { players, loading, error, setPlayers } = useFetchPlayers();
+  const { kFactor } = useKFactor();
 
   const [player1, setPlayer1] = useState<Player | null>(null);
   const [player2, setPlayer2] = useState<Player | null>(null);
@@ -29,7 +32,8 @@ export default function Page() {
       const { player1WinProbability, player2WinProbability } = calculateElo(
         player1.eloScore,
         player2.eloScore,
-        "player1" // The winner doesn't matter for probability calculation
+        "player1",
+        kFactor
       );
       setProbabilities({
         player1: player1WinProbability,
@@ -38,13 +42,13 @@ export default function Page() {
     } else {
       setProbabilities(null);
     }
-  }, [player1, player2]);
+  }, [player1, player2, kFactor]);
 
   if (loading) return null;
   if (error) {
     return (
       <div className="max-w-md mx-auto py-4 px-4 mt-10">
-        <p>Error: {error}</p>
+        <ErrorDisplay error={error} />
       </div>
     );
   }
@@ -64,17 +68,11 @@ export default function Page() {
     const matchWinner = winner.id === player1.id ? "player1" : "player2";
 
     // 3. Calculate new Elo ratings
-    const { newPlayer1Elo, newPlayer2Elo } = calculateElo(
+    const { newPlayer1Elo, newPlayer2Elo, player1Change, player2Change } = calculateElo(
       player1.eloScore,
       player2.eloScore,
-      matchWinner
-    );
-
-    // Calculate Elo changes
-    const { player1Change, player2Change } = calculateElo(
-      player1.eloScore,
-      player2.eloScore,
-      matchWinner
+      matchWinner,
+      kFactor
     );
 
     setEloChanges({

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
+import ErrorDisplay from '../components/ErrorDisplay';
 
 export default function Page() {
   const { players, loading, error } = useFetchPlayers();
@@ -15,7 +16,7 @@ export default function Page() {
   if (error) {
     return (
       <div className="max-w-lg mx-auto py-4 px-4 mt-10">
-        <p>Error: {error}</p>
+        <ErrorDisplay error={error} />
       </div>
     );
   }

@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
 import { Player } from "../types/player";
 import { useKFactor } from "../hooks/useKFactor";
+import ErrorDisplay from "../components/ErrorDisplay";
 
 export default function Page() {
-  const { players, setPlayers, loading, error } = useFetchPlayers();
+  const { players, setPlayers, loading: playersLoading, error } = useFetchPlayers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [playerName, setPlayerName] = useState("");
@@ -17,9 +18,13 @@ export default function Page() {
   const [editElo, setEditElo] = useState("");
   const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { kFactor: initialKFactor, updateKFactor } = useKFactor();
-  const [kFactor, setKFactor] = useState(initialKFactor);
+  const { kFactor: initialKFactor, updateKFactor, loading: kFactorLoading } = useKFactor();
+  const [kFactor, setKFactor] = useState(50);
   const [showKFactorConfirm, setShowKFactorConfirm] = useState(false);
+
+  useEffect(() => {
+    setKFactor(initialKFactor);
+  }, [initialKFactor]);
 
   const handleAddPlayer = async () => {
     try {
@@ -87,7 +92,7 @@ export default function Page() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: selectedPlayer.id,
+          id: parseInt(selectedPlayer.id),
         }),
       });
 
@@ -109,8 +114,14 @@ export default function Page() {
     setEditElo("");
   };
 
-  if (loading) return null;
-  if (error) return <div>Error: {error}</div>;
+  if (playersLoading || kFactorLoading) return null;
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto py-4 px-4 mt-10">
+        <ErrorDisplay error={error} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-4 px-5 mt-10 flex flex-col space-y-8">
@@ -170,44 +181,46 @@ export default function Page() {
       </div>
 
       {/* K-Factor Settings Section */}
-      <div className="flex flex-col space-y-4">
-        <h2 className="text-2xl font-bold">ELO Settings</h2>
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">K-Factor (1-100)</span>
-            <span className="label-text-alt">Controls how much ELO changes after each match</span>
-          </label>
-          <div className="flex gap-4">
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={kFactor}
-              onChange={(e) => setKFactor(parseInt(e.target.value))}
-              className="range range-primary flex-grow"
-            />
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={kFactor}
-              onChange={(e) => setKFactor(parseInt(e.target.value))}
-              className="input input-bordered w-20"
-            />
+      {!kFactorLoading && (
+        <div className="flex flex-col space-y-4">
+          <h2 className="text-2xl font-bold">ELO Settings</h2>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">K-Factor (1-100)</span>
+              <span className="label-text-alt">Controls how much ELO changes after each match</span>
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={kFactor}
+                onChange={(e) => setKFactor(parseInt(e.target.value))}
+                className="range range-primary flex-grow"
+              />
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={kFactor}
+                onChange={(e) => setKFactor(parseInt(e.target.value))}
+                className="input input-bordered w-20"
+              />
+            </div>
+            <button
+              className="btn btn-primary mt-4"
+              onClick={async () => {
+                const success = await updateKFactor(kFactor);
+                if (success) {
+                  setShowKFactorConfirm(true);
+                }
+              }}
+            >
+              Save K-Factor
+            </button>
           </div>
-          <button
-            className="btn btn-primary mt-4"
-            onClick={async () => {
-              const success = await updateKFactor(kFactor);
-              if (success) {
-                setShowKFactorConfirm(true);
-              }
-            }}
-          >
-            Save K-Factor
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Add Player Dialog */}
       <dialog className={`modal ${dialogOpen ? "modal-open" : ""}`}>

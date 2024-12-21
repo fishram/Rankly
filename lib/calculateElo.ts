@@ -2,7 +2,7 @@ export default function calculateElo(
   player1Elo: number,
   player2Elo: number,
   winner: "player1" | "player2",
-  kFactor: number = 50
+  kFactor: number
 ) {
   // Calculate expected scores
   const expectedScore1 =

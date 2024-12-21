@@ -4,13 +4,21 @@ import Link from "next/link";
 import { useState } from "react";
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
 import { useFetchMatches } from "../hooks/useFetchMatches";
+import ErrorDisplay from '../components/ErrorDisplay';
 
 export default function Page() {
-  const { players, loading: playersLoading } = useFetchPlayers();
+  const { players, loading: playersLoading, error } = useFetchPlayers();
   const { matches, loading: matchesLoading } = useFetchMatches();
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
   if (playersLoading || matchesLoading) return null;
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto py-4 px-4 mt-10">
+        <ErrorDisplay error={error} />
+      </div>
+    );
+  }
 
   // Calculate head-to-head records
   const getHeadToHeadStats = (playerId: string) => {

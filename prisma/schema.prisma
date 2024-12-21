@@ -36,3 +36,8 @@ model Match {
   player2 Player  @relation("MatchPlayer2", fields: [player2Id], references: [id])
   winner  Player? @relation("MatchWinner", fields: [winnerId], references: [id])
 }
+
+model Settings {
+  id      String  @id @default(cuid())
+  kFactor Int     @default(50)
+}

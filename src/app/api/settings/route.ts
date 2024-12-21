@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server";
-
-let kFactor = 50; // Default K-factor
+import prisma from "../../../../lib/prisma";
 
 export async function GET() {
-  return NextResponse.json({ kFactor });
+  try {
+    // Get the first settings record or create it if it doesn't exist
+    const settings = await prisma.settings.upsert({
+      where: { id: "default" },
+      update: {},
+      create: {
+        id: "default",
+        kFactor: 50
+      }
+    });
+
+    return NextResponse.json({ kFactor: settings.kFactor });
+  } catch (error) {
+    console.error("Error fetching K-factor:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch K-factor" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PUT(req: Request) {
@@ -17,8 +34,16 @@ export async function PUT(req: Request) {
       );
     }
 
-    kFactor = newKFactor;
-    return NextResponse.json({ kFactor });
+    const settings = await prisma.settings.upsert({
+      where: { id: "default" },
+      update: { kFactor: newKFactor },
+      create: {
+        id: "default",
+        kFactor: newKFactor
+      }
+    });
+
+    return NextResponse.json({ kFactor: settings.kFactor });
   } catch (error) {
     console.error("Error updating K-factor:", error);
     return NextResponse.json(

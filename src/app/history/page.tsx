@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { useFetchMatches } from "../hooks/useFetchMatches";
 import { format } from "date-fns";
+import ErrorDisplay from "../components/ErrorDisplay";
 
 export default function MatchHistory() {
   const { matches, loading, error } = useFetchMatches();
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto py-4 px-4 mt-10">
+        <ErrorDisplay error={error} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
