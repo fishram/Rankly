@@ -15,9 +15,9 @@ export function useFetchPlayers() {
         }
         const data = await res.json();
         setPlayers(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to fetch players:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
       } finally {
         setLoading(false);
       }

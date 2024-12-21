@@ -117,9 +117,8 @@ export default function Page() {
         return p;
       }));
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      // You might want to add some error state handling here instead of the alert
       setMatchCompleted(false);
       setEloChanges(null);
     }

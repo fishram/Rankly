@@ -14,9 +14,9 @@ export function useKFactor() {
         }
         const data = await res.json();
         setKFactor(data.kFactor);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Failed to fetch K-factor:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
       } finally {
         setLoading(false);
       }
@@ -41,9 +41,9 @@ export function useKFactor() {
       const data = await res.json();
       setKFactor(data.kFactor);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to update K-factor:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
       return false;
     }
   };
