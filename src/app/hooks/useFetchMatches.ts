@@ -15,9 +15,9 @@ export function useFetchMatches() {
         }
         const data = await res.json();
         setMatches(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to fetch matches:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
       } finally {
         isLoading(false);
       }

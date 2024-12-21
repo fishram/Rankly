@@ -3,7 +3,7 @@ import { Player } from "../types/player";
 
 export function useFetchPlayers() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, isLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export function useFetchPlayers() {
         console.error("Failed to fetch players:", err);
         setError(err.message);
       } finally {
-        isLoading(false);
+        setLoading(false);
       }
     }
     fetchPlayers();
