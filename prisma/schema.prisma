@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -8,18 +8,19 @@ generator client {
 }
 
 model Player {
-  id       Int    @id @default(autoincrement())
-  name     String
-  eloScore Int
+  id         Int      @id @default(autoincrement())
+  name       String
+  eloScore   Int      @default(1000)
+  highestElo Int      @default(1000)
+  wins       Int      @default(0)
+  losses     Int      @default(0)
 
   // Matches where this player is player1
   matchesAsPlayer1 Match[] @relation("MatchPlayer1")
-
   // Matches where this player is player2
   matchesAsPlayer2 Match[] @relation("MatchPlayer2")
-
   // Matches where this player is winner
-  matchesWon Match[] @relation("MatchWinner")
+  matchesWon       Match[] @relation("MatchWinner")
 }
 
 model Match {

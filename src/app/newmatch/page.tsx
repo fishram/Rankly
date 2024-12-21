@@ -23,6 +23,10 @@ export default function Page() {
     newPlayer1Elo: number;
     newPlayer2Elo: number;
   } | null>(null);
+  const [newPeakAchieved, setNewPeakAchieved] = useState<{
+    player1: boolean;
+    player2: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (player1 && player2) {
@@ -83,6 +87,13 @@ export default function Page() {
       newPlayer1Elo,
       newPlayer2Elo,
     });
+
+    // Check for new peak SR
+    setNewPeakAchieved({
+      player1: newPlayer1Elo > (player1.highestElo || 0),
+      player2: newPlayer2Elo > (player2.highestElo || 0),
+    });
+
     setMatchCompleted(true);
 
     // 4. Update the database
