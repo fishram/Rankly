@@ -19,7 +19,7 @@ export default function Page() {
     matches.forEach(match => {
       let opponent: string;
       let isWin: boolean;
-      let eloChange: number = 0; // We'd need to calculate this from match data
+      const eloChange: number = 0;
 
       if (match.player1.id === playerId) {
         opponent = match.player2.id;
@@ -102,7 +102,7 @@ export default function Page() {
               </thead>
               <tbody>
                 {Array.from(getHeadToHeadStats(selectedPlayer))
-                  .filter(([_, stats]) => stats.wins + stats.losses > 0)
+                  .filter(([, stats]) => stats.wins + stats.losses > 0)
                   .sort((a, b) => {
                     const totalGamesA = a[1].wins + a[1].losses;
                     const totalGamesB = b[1].wins + b[1].losses;

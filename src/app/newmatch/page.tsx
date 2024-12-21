@@ -196,8 +196,12 @@ export default function Page() {
                 {matchCompleted ? `${eloChanges?.newPlayer1Elo} SR` : `${player1.eloScore} SR`}
               </div>
               {matchCompleted ? (
-                <div className={`text-smd animate-elo-change ${eloChanges?.player1Change! >= 0 ? 'text-success' : 'text-error'}`}>
-                  {eloChanges?.player1Change! >= 0 ? '+' : ''}{eloChanges?.player1Change}
+                <div className={`text-smd animate-elo-change ${
+                  eloChanges ? (eloChanges.player1Change >= 0 ? 'text-success' : 'text-error') : ''
+                }`}>
+                  {eloChanges && (
+                    <>{eloChanges.player1Change >= 0 ? '+' : ''}{eloChanges.player1Change}</>
+                  )}
                 </div>
               ) : (
                 probabilities && (
@@ -221,8 +225,12 @@ export default function Page() {
                 {matchCompleted ? `${eloChanges?.newPlayer2Elo} SR` : `${player2.eloScore} SR`}
               </div>
               {matchCompleted ? (
-                <div className={`text-md animate-elo-change ${eloChanges?.player2Change! >= 0 ? 'text-success' : 'text-error'}`}>
-                  {eloChanges?.player2Change! >= 0 ? '+' : ''}{eloChanges?.player2Change}
+                <div className={`text-md animate-elo-change ${
+                  eloChanges ? (eloChanges.player2Change >= 0 ? 'text-success' : 'text-error') : ''
+                }`}>
+                  {eloChanges && (
+                    <>{eloChanges.player2Change >= 0 ? '+' : ''}{eloChanges.player2Change}</>
+                  )}
                 </div>
               ) : (
                 probabilities && (
