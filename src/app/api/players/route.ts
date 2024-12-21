@@ -16,7 +16,7 @@ export async function GET() {
       }
     });
     return NextResponse.json(players || []);
-  } catch (error) {
+  } catch (_) {
     return NextResponse.json(
       { error: "Failed to fetch players" },
       { status: 500 }
