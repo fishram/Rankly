@@ -19,6 +19,7 @@
     "theme-change": "^2.5.0"
   },
   "devDependencies": {
+    "@prisma/client": "^6.1.0",
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
