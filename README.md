@@ -1,36 +1,203 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rankly
+
+A Next.js application for tracking player rankings and matches with authentication functionality.
+
+## Features
+
+- Player ranking system using ELO algorithm
+- Match history tracking
+- User authentication and authorization
+- Player statistics and head-to-head records
+- Admin dashboard for player management
+- Responsive design for mobile and desktop
+
+## Technologies Used
+
+- **Frontend**:
+  - Next.js 15
+  - React 19
+  - TypeScript
+  - TailwindCSS
+  - DaisyUI
+
+- **Backend**:
+  - Next.js API Routes
+  - Prisma ORM
+  - PostgreSQL
+  - NextAuth.js
+
+- **Authentication**:
+  - NextAuth.js with Credentials Provider
+  - bcrypt for password hashing
+
+- **Development Tools**:
+  - ESLint
+  - Prisma CLI
+  - TypeScript
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (version 16.x or higher)
+- [npm](https://www.npmjs.com/) (comes with Node.js)
+- [PostgreSQL](https://www.postgresql.org/) (version 12 or higher)
+- [Git](https://git-scm.com/)
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/fishram/Rankly.git
+cd rankly
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Database Setup
 
-## Learn More
+You have several options for setting up the database:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Supabase (Recommended for beginners)**:
+   - Create a free account at [Supabase](https://supabase.com)
+   - Create a new project
+   - Go to Project Settings → Database
+   - Find your connection string under "Connection string" → "URI"
+   - Copy the connection string and replace `[YOUR-PASSWORD]` with your project password
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Local PostgreSQL**:
+   - Install [PostgreSQL](https://www.postgresql.org/download/) locally
+   - Create a new database: `createdb rankly`
+   - Your connection string will follow this format:
+     ```
+     postgresql://username:password@localhost:5432/rankly
+     ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Other Hosted Options**:
+   - Any PostgreSQL-compatible database service
 
-## Deploy on Vercel
+### 4. Environment Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create a `.env.local` file in the root directory:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Environment Setup
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Database:
+
+# Option 1 - Supabase
+DATABASE_URL= "transaction-pooler url from supabase"
+DIRECT_URL= "session-pooler url from supabase"
+
+# Option 2 - Local PostgreSQL
+DATABASE_URL="postgresql://username:password@localhost:5432/rankly"
+DIRECT_URL="postgresql://username:password@localhost:5432/rankly"
+
+# Authentication
+NEXTAUTH_URL="http://localhost:3000"  # Local development URL
+NEXTAUTH_SECRET=""  # Add your generated secret here
+```
+
+#### How to set up each variable:
+
+1. **Database URLs** (choose one option):
+   
+   **Option 1 - Supabase:**
+   - Create account at [Supabase](https://supabase.com)
+   - Create new project
+   - Go to Connect at the top of the page
+   - Copy the connection strings
+   - Replace `[YOUR-PASSWORD]` with your project password
+
+   **Option 2 - Local PostgreSQL:**
+   - Install PostgreSQL locally
+   - Create database: `createdb rankly`
+   - Replace `username` and `password` with your PostgreSQL credentials
+   - Default port is usually 5432
+
+2. **NEXTAUTH_URL:**
+   - For local development, use: `http://localhost:3000`
+   - For production, use your deployed URL
+
+3. **NEXTAUTH_SECRET:**
+   - Generate a random string using one of these commands:
+     ```bash
+     # Option 1 - Using openssl (Mac/Linux)
+     openssl rand -base64 32
+
+     # Option 2 - Using Node.js
+     node -e "console.log(crypto.randomBytes(32).toString('base64'))"
+     ```
+   - Copy the output and paste it as your NEXTAUTH_SECRET
+
+### 5. Database Setup and Initialization
+
+After setting up your environment variables, you need to initialize your database:
+
+```bash
+# Generate Prisma client (this is also run automatically after npm install)
+npm run postinstall
+
+# Push the database schema to your database
+npx prisma db push
+
+# Run database migrations
+npx prisma migrate deploy
+
+# Optional: Seed the database with initial data (if you have a seed file)
+npx prisma db seed
+```
+
+#### Verify Your Database:
+
+You can use Prisma Studio to view and manage your database:
+```bash
+npx prisma studio
+```
+This will open a browser window at `http://localhost:5555` where you can inspect your database.
+
+#### Troubleshooting:
+
+If you encounter any issues:
+
+1. **Database Connection Issues**:
+   ```bash
+   # Verify your database connection
+   npx prisma db pull
+   ```
+
+2. **Reset Database and Reseed** (⚠️ Warning: This will delete all data):
+   ```bash
+   # Reset your database and apply migrations
+   npx prisma migrate reset
+   # Seed with demo data
+   npm run seed
+   ```
+
+3. **Schema Issues**:
+   ```bash
+   # Validate your schema
+   npx prisma validate
+   ```
+
+### 6. Run the development server (with Prisma Studio)
+
+```bash
+npx prisma studio & npm run dev
+```
+
+This will start the development server at [http://localhost:3000](http://localhost:3000](http://localhost:3000)).
+
+## Project Structure
+
+- `/src` - Source code
+  - `/app` - Next.js app router pages and components
+  - `/middleware.ts` - Authentication middleware
+  - `/lib` - Utility functions and shared code
+- `/prisma` - Database schema and migrations

@@ -10,7 +10,7 @@ generator client {
 
 model Player {
   id         Int      @id @default(autoincrement())
-  name       String
+  name       String   @unique
   eloScore   Int      @default(1000)
   highestElo Int      @default(1000)
   wins       Int      @default(0)
