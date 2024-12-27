@@ -12,7 +12,7 @@ export default function ErrorDisplay({ error, className = "", onRetry }: ErrorDi
       </svg>
       <span className="flex-grow">{error}</span>
       {onRetry && (
-        <button onClick={onRetry} className="btn btn-sm btn-outline">
+        <button onClick={onRetry} className="btn btn-sm btn-outline text-black border-black hover:bg-black hover:text-white">
           Retry
         </button>
       )}
