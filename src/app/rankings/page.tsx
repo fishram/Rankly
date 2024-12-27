@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
 import ErrorDisplay from '../components/ErrorDisplay';
+import NameCard from './components/nameCard';
 
 export default function Page() {
   const { players, loading, error } = useFetchPlayers();
@@ -21,17 +22,19 @@ export default function Page() {
     );
   }
 
-  const sortedPlayers = [...players].sort((a, b) => {
-    switch (sortBy) {
-      case 'matches':
-        return b.wins - a.wins;
-      case 'peak':
-        return b.highestElo - a.highestElo;
-      case 'rank':
-      default:
-        return b.eloScore - a.eloScore;
-    }
-  });
+  const sortedPlayers = [...players]
+    .filter(player => player.isActive)
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'matches':
+          return b.wins - a.wins;
+        case 'peak':
+          return b.highestElo - a.highestElo;
+        case 'rank':
+        default:
+          return b.eloScore - a.eloScore;
+      }
+    });
 
   return (
     <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
@@ -43,34 +46,20 @@ export default function Page() {
         </Link>
       </div>
 
-
-      {/* Table Container */}
-      <div className="w-full overflow-hidden">
-        <table className="table mx-auto ml-5">
-          <thead>
-            <tr>
-              <th className="whitespace-nowrap">Rank</th>
-              <th className="whitespace-nowrap">Name</th>
-              {sortBy === 'rank' && <th className="whitespace-nowrap">ELO</th>}
-              {sortBy === 'matches' && <th className="whitespace-nowrap">Wins</th>}
-              {sortBy === 'peak' && <th className="whitespace-nowrap">Peak SR</th>}
-            </tr>
-          </thead>
-          <tbody className="text-lg">
-            {sortedPlayers.map((player, index) => (
-              <tr key={player.id}>
-                <td>{index + 1}</td>
-                <td className="truncate">{player.name}</td>
-                {sortBy === 'rank' && <td>{player.eloScore}</td>}
-                {sortBy === 'matches' && <td>{player.wins}</td>}
-                {sortBy === 'peak' && <td>{player.highestElo}</td>}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Cards Container */}
+      <div className="flex flex-col gap-4">
+        {sortedPlayers.map((player, index) => (
+          <NameCard
+            key={player.id}
+            rank={index + 1}
+            player={player}
+            sortBy={sortBy}
+          />
+        ))}
       </div>
-            {/* Sort Dropdown */}
-            <div className="w-full flex justify-start px-4">
+
+      {/* Sort Dropdown */}
+      <div className="w-full flex justify-start px-4">
         <div className="dropdown dropdown-hover">
           <div
             tabIndex={0}

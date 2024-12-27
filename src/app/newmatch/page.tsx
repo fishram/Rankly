@@ -7,10 +7,14 @@ import { Player } from "../types/player";
 import calculateElo from "../../../lib/calculateElo";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { useKFactor } from "../hooks/useKFactor";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
   const { players, loading, error, setPlayers } = useFetchPlayers();
   const { kFactor } = useKFactor();
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   const [player1, setPlayer1] = useState<Player | null>(null);
   const [player2, setPlayer2] = useState<Player | null>(null);
@@ -26,6 +30,23 @@ export default function Page() {
     newPlayer1Elo: number;
     newPlayer2Elo: number;
   } | null>(null);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+    }
+  }, [status, router]);
+
+  // Auto-populate player1 with the current user's player
+  useEffect(() => {
+    if (players.length > 0 && session?.user?.id) {
+      const userPlayer = players.find(p => p.userId === session.user.id);
+      if (userPlayer) {
+        setPlayer1(userPlayer);
+      }
+    }
+  }, [players, session]);
 
   useEffect(() => {
     if (player1 && player2) {
@@ -44,7 +65,7 @@ export default function Page() {
     }
   }, [player1, player2, kFactor]);
 
-  if (loading) return null;
+  if (loading || status === "loading") return null;
   if (error) {
     return (
       <div className="max-w-md mx-auto py-4 px-4 mt-10">
@@ -134,29 +155,13 @@ export default function Page() {
 
       {/* Player Selection Row */}
       <div className="w-full flex flex-row justify-center space-x-4">
-        {/* Player 1 Dropdown */}
-        <div className="dropdown dropdown-hover">
+        {/* Player 1 Display (not selectable) */}
+        <div className="w-40">
           <div
-            tabIndex={0}
-            role="button"
-            className={`btn w-40 text-lg truncate ${
-              player1 ? "btn-primary" : "btn-outline"
-            }`}
+            className="btn w-40 text-lg truncate btn-primary"
           >
-            {player1 ? player1.name : "Select Player 1"}
+            {player1 ? player1.name : "Loading..."}
           </div>
-          <ul
-            tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
-          >
-            {players
-              .filter(p => p.id !== player2?.id)
-              .map((p) => (
-                <li key={p.id}>
-                  <a onClick={() => setPlayer1(p)}>{p.name}</a>
-                </li>
-              ))}
-          </ul>
         </div>
 
         {/* Player 2 Dropdown */}

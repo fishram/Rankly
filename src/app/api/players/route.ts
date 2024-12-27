@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
-
-
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const includeInactive = searchParams.get('includeInactive') === 'true';
+
     const players = await prisma.player.findMany({
+      where: {
+        isActive: includeInactive ? undefined : true
+      },
       select: {
         id: true,
         name: true,
@@ -13,6 +19,8 @@ export async function GET() {
         highestElo: true,
         wins: true,
         losses: true,
+        userId: true,
+        isActive: true,
       }
     });
     return NextResponse.json(players || []);
@@ -25,8 +33,9 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const token = await getToken({ req });
     const { name, eloScore } = await req.json();
 
     if (!name || !eloScore) {
@@ -41,6 +50,7 @@ export async function POST(req: Request) {
         name,
         eloScore,
         highestElo: eloScore,
+        userId: token?.sub || null, // Associate player with current user
       },
     });
 
@@ -54,8 +64,9 @@ export async function POST(req: Request) {
   }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
+    const token = await getToken({ req });
     const { id, name, eloScore } = await req.json();
 
     if (!id || (!name && eloScore === undefined)) {
@@ -65,16 +76,35 @@ export async function PUT(req: Request) {
       );
     }
 
+    // Check if user owns this player or if player has no owner
+    const player = await prisma.player.findUnique({
+      where: { id },
+    });
+
+    if (!player) {
+      return NextResponse.json(
+        { error: "Player not found" },
+        { status: 404 }
+      );
+    }
+
+    if (player.userId && player.userId !== token?.sub) {
+      return NextResponse.json(
+        { error: "Unauthorized to modify this player" },
+        { status: 403 }
+      );
+    }
+
     const updateData: { name?: string; eloScore?: number } = {};
     if (name) updateData.name = name;
     if (eloScore !== undefined) updateData.eloScore = eloScore;
 
-    const player = await prisma.player.update({
+    const updatedPlayer = await prisma.player.update({
       where: { id },
       data: updateData,
     });
 
-    return NextResponse.json(player);
+    return NextResponse.json(updatedPlayer);
   } catch (error) {
     console.error("Error updating player:", error);
     return NextResponse.json(
@@ -86,24 +116,26 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const { id } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const playerId = searchParams.get('id');
 
-    if (!id) {
+    if (!playerId) {
       return NextResponse.json(
         { error: "Player ID is required" },
         { status: 400 }
       );
     }
 
-    await prisma.player.delete({
-      where: { id },
+    const player = await prisma.player.update({
+      where: { id: parseInt(playerId) },
+      data: { isActive: false }
     });
 
-    return NextResponse.json({ message: "Player deleted successfully" });
+    return NextResponse.json({ message: "Player marked as inactive", player });
   } catch (error) {
-    console.error("Error deleting player:", error);
+    console.error("Error marking player as inactive:", error);
     return NextResponse.json(
-      { error: "Failed to delete player" },
+      { error: "Failed to mark player as inactive" },
       { status: 500 }
     );
   }

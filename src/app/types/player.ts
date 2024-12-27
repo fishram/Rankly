@@ -5,4 +5,6 @@ export interface Player {
   highestElo: number;
   wins: number;
   losses: number;
+  userId?: string;
+  isActive: boolean;
 }
