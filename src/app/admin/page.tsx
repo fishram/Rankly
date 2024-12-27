@@ -42,8 +42,14 @@ export default function AdminPage() {
       const player = players.find(p => p.id === playerId);
       if (!player) return;
 
-      const res = await fetch(`/api/players?id=${playerId}`, {
-        method: 'DELETE',
+      const res = await fetch(`/api/players/${playerId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isActive: !player.isActive
+        }),
       });
 
       if (!res.ok) throw new Error('Failed to update player status');
