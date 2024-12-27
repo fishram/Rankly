@@ -4,6 +4,7 @@ import { prisma } from "../../../../../lib/prisma";
 
 export async function POST(req: Request) {
   try {
+    await prisma.$connect();
     const { email, password, username } = await req.json();
 
     if (!email || !password || !username) {
@@ -69,5 +70,7 @@ export async function POST(req: Request) {
       { error: "Error creating user" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 } 

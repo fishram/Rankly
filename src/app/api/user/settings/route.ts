@@ -5,6 +5,7 @@ import { prisma } from "../../../../../lib/prisma";
 
 export async function PUT(request: Request) {
   try {
+    await prisma.$connect();
     const session = await getServerSession(authOptions);
     console.log("Current session:", session);
     
@@ -64,5 +65,7 @@ export async function PUT(request: Request) {
   } catch (error) {
     console.error("Error updating user settings:", error);
     return new NextResponse(error instanceof Error ? error.message : "Internal Server Error", { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 } 

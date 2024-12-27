@@ -5,6 +5,7 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function PUT(request: Request) {
   try {
+    await prisma.$connect();
     const session = await getServerSession(authOptions);
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,5 +34,7 @@ export async function PUT(request: Request) {
       { error: "Failed to update player status" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

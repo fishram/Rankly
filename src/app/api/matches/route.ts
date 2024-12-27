@@ -5,6 +5,7 @@ import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
   try {
+    await prisma.$connect();
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -80,20 +81,33 @@ export async function POST(req: Request) {
       { error: "Failed to create match" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function GET() {
-  const matches = await prisma.match.findMany({
-    include: {
-      player1: true,
-      player2: true,
-      winner: true,
-    },
-    orderBy: {
-      date: 'desc'
-    }
-  });
-  
-  return NextResponse.json(matches);
+  try {
+    await prisma.$connect();
+    const matches = await prisma.match.findMany({
+      include: {
+        player1: true,
+        player2: true,
+        winner: true,
+      },
+      orderBy: {
+        date: 'desc'
+      }
+    });
+    
+    return NextResponse.json(matches);
+  } catch (error) {
+    console.error("Error fetching matches:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch matches" },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }

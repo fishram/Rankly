@@ -3,6 +3,7 @@ import { prisma } from "../../../../lib/prisma";
 
 export async function GET() {
   try {
+    await prisma.$connect();
     // Get the first settings record or create it if it doesn't exist
     const settings = await prisma.settings.upsert({
       where: { id: "default" },
@@ -20,11 +21,14 @@ export async function GET() {
       { error: "Failed to fetch K-factor" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function PUT(req: Request) {
   try {
+    await prisma.$connect();
     const { kFactor: newKFactor } = await req.json();
 
     if (typeof newKFactor !== 'number' || newKFactor < 1 || newKFactor > 100) {
@@ -50,5 +54,7 @@ export async function PUT(req: Request) {
       { error: "Failed to update K-factor" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 } 

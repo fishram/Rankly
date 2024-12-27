@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 
 export async function GET(req: Request) {
   try {
+    await prisma.$connect();
     const { searchParams } = new URL(req.url);
     const includeInactive = searchParams.get('includeInactive') === 'true';
 
@@ -46,11 +47,14 @@ export async function GET(req: Request) {
       { error: "Failed to fetch players" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    await prisma.$connect();
     const token = await getToken({ req });
     const { name, eloScore } = await req.json();
 
@@ -66,7 +70,7 @@ export async function POST(req: NextRequest) {
         name,
         eloScore,
         highestElo: eloScore,
-        userId: token?.sub || null, // Associate player with current user
+        userId: token?.sub || null,
       },
     });
 
@@ -77,11 +81,14 @@ export async function POST(req: NextRequest) {
       { error: "Failed to create player" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
+    await prisma.$connect();
     const token = await getToken({ req });
     const { id, name, eloScore } = await req.json();
 
@@ -92,7 +99,6 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Check if user owns this player or if player has no owner
     const player = await prisma.player.findUnique({
       where: { id },
     });
@@ -127,11 +133,14 @@ export async function PUT(req: NextRequest) {
       { error: "Failed to update player" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function DELETE(req: Request) {
   try {
+    await prisma.$connect();
     const { searchParams } = new URL(req.url);
     const playerId = searchParams.get('id');
 
@@ -154,5 +163,7 @@ export async function DELETE(req: Request) {
       { error: "Failed to mark player as inactive" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
