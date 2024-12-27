@@ -43,7 +43,7 @@ export default function AdminPage() {
       if (!player) return;
 
       const res = await fetch(`/api/players/${playerId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
