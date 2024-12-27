@@ -1,17 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useFetchPlayers } from "../hooks/useFetchPlayers";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useFetchPlayers, useFetchAllPlayers } from "../hooks/useFetchPlayers";
 import { useFetchMatches } from "../hooks/useFetchMatches";
 import ErrorDisplay from '../components/ErrorDisplay';
 
 export default function Page() {
+  const { data: session, status } = useSession({ required: true });
   const { players, loading: playersLoading, error } = useFetchPlayers();
+  const { players: allPlayers, loading: allPlayersLoading } = useFetchAllPlayers();
   const { matches, loading: matchesLoading } = useFetchMatches();
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
-  if (playersLoading || matchesLoading) return null;
+  useEffect(() => {
+    if (players && session?.user?.username) {
+      const currentPlayer = players.find(p => p.name === session.user.username);
+      if (currentPlayer) {
+        setSelectedPlayer(currentPlayer.id);
+      }
+    }
+  }, [players, session]);
+
+  if (status === "loading" || playersLoading || matchesLoading || allPlayersLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="max-w-md mx-auto py-4 px-4 mt-10">
@@ -62,19 +81,33 @@ export default function Page() {
 
       {/* Player Selection Dropdown */}
       <div className="w-full flex">
-        <div className="dropdown dropdown-hover w-full sm:w-1/3">
+        <div className="dropdown dropdown-hover w-full sm:w-1/3 btn-primary">
           <div
             tabIndex={0}
             role="button"
-            className="btn btn-lg w-full text-xl"
+            className="btn btn-lg w-full text-xl text-black flex justify-center items-center"
           >
-            {selectedPlayer 
-              ? players.find(p => p.id === selectedPlayer)?.name 
-              : "Select a Player"}
+            <span>
+              {selectedPlayer 
+                ? players.find(p => p.id === selectedPlayer)?.name 
+                : "Select a Player"}
+            </span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" 
+                clipRule="evenodd" 
+              />
+            </svg>
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full"
+            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full text-white"
           >
             {players.map((player) => (
               <li key={player.id}>
@@ -117,7 +150,7 @@ export default function Page() {
                     return totalGamesB - totalGamesA;
                   })
                   .map(([opponentId, stats]) => {
-                    const opponent = players.find(p => p.id === opponentId);
+                    const opponent = allPlayers.find(p => p.id === opponentId);
                     const totalGames = stats.wins + stats.losses;
                     const winRate = ((stats.wins / totalGames) * 100).toFixed(1);
 

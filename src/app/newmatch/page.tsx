@@ -307,10 +307,17 @@ export default function Page() {
           <button
             className="btn btn-outline px-10"
             onClick={() => {
-              setPlayer1(null);
               setPlayer2(null);
               setWinner(null);
               setProbabilities(null);
+              
+              // Re-populate player1 with the current user's player
+              if (session?.user?.id) {
+                const userPlayer = players.find(p => p.userId === session.user.id);
+                if (userPlayer) {
+                  setPlayer1(userPlayer);
+                }
+              }
             }}
           >
             Reset
@@ -325,10 +332,17 @@ export default function Page() {
           onClick={() => {
             setMatchCompleted(false);
             setEloChanges(null);
-            setPlayer1(null);
             setPlayer2(null);
             setWinner(null);
             setProbabilities(null);
+            
+            // Re-populate player1 with the current user's player
+            if (session?.user?.id) {
+              const userPlayer = players.find(p => p.userId === session.user.id);
+              if (userPlayer) {
+                setPlayer1(userPlayer);
+              }
+            }
           }}
         >
           New Match

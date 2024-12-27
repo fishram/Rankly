@@ -30,7 +30,7 @@ export default function Page() {
             </Link>
             {session?.user?.isAdmin && (
               <Link className="btn btn-warning btn-lg col-span-2" href="/admin">
-                Admin
+                Admin Settings
               </Link>
             )}
           </div>
