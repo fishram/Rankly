@@ -16,6 +16,15 @@ export const prisma = globalForPrisma.prisma ??
     },
   })
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+// Handle connection cleanup
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+} else {
+  // In production, properly handle connection lifecycle
+  prisma.$connect(); // Ensure initial connection
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect();
+  });
+}
 
 export default prisma;

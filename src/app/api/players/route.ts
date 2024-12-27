@@ -25,7 +25,23 @@ export async function GET(req: Request) {
     });
     return NextResponse.json(players || []);
   } catch (error) {
-    console.error("Error fetching players:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error("Error fetching players:", {
+      message: errorMessage,
+      stack: errorStack,
+      timestamp: new Date().toISOString(),
+      url: req.url
+    });
+
+    if (error instanceof Error && 
+        (errorMessage.includes('Connection') || errorMessage.includes('timeout'))) {
+      return NextResponse.json(
+        { error: "Database connection error. Please try again." },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch players" },
       { status: 500 }
