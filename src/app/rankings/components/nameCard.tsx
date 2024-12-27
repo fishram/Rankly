@@ -26,11 +26,7 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
   const getCardStyle = () => {
     switch (rank) {
       case 1:
-        return "card shadow-xl w-full bg-gradient-to-r from-yellow-600 to-yellow-400 text-black";
-      case 2:
-        return "card shadow-xl w-full bg-gradient-to-r from-slate-400 to-slate-300 text-black";
-      case 3:
-        return "card shadow-xl w-full bg-gradient-to-r from-amber-700 to-amber-600 text-black";
+        return "card shadow-xl w-full bg-gradient-to-r from-green-600 to-green-400 text-black";
       default:
         return "card bg-base-200 shadow-xl w-full";
     }
@@ -39,12 +35,18 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
   const getRankStyle = () => {
     switch (rank) {
       case 1:
-        return "text-2xl font-extrabold w-8";
-      case 2:
-      case 3:
-        return "text-xl font-bold w-8";
+        return "text-2xl font-bold tracking-wider w-8";
       default:
-        return "text-xl font-bold w-8";
+        return "text-xl font-semibold w-8";
+    }
+  };
+
+  const getNameStyle = () => {
+    switch (rank) {
+      case 1:
+        return "text-xl font-bold";
+      default:
+        return "text-xl font-medium";
     }
   };
 
@@ -53,7 +55,7 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
       <div className="card-body p-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <div className={getRankStyle()}>{rank}</div>
-          <div className="text-xl font-medium">{player.name}</div>
+          <div className={getNameStyle()}>{player.name}</div>
         </div>
         <div className="text-xl font-bold">{getValue()}</div>
       </div>
