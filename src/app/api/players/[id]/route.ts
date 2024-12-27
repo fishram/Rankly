@@ -4,7 +4,7 @@ import prisma from "../../../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   context: { params: { id: string } }
 ) {
