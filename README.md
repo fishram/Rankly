@@ -70,11 +70,19 @@ You have several options for setting up the database:
    - Copy the connection string and replace `[YOUR-PASSWORD]` with your project password
 
 2. **Local PostgreSQL**:
-   - Install [PostgreSQL](https://www.postgresql.org/download/) locally
-   - Create a new database: `createdb rankly`
+   - Install [PostgreSQL](https://www.postgresql.org/download/) locally:
+   `brew install postgresql@14`
+   - Start PostgreSQL Service:
+   - ```brew services start postgresql```
+   - Then enter postgreSQL:
+   - `psql postgres`
+   - Create the database:
+   - `CREATE DATABASE rankly;`
+   - Exit psql:
+   - `\q`
    - Your connection string will follow this format:
      ```
-     postgresql://username:password@localhost:5432/rankly
+     postgresql://admin:admin@localhost:5432/rankly
      ```
 
 3. **Other Hosted Options**:
