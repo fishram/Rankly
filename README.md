@@ -40,7 +40,6 @@ A Next.js application for tracking player rankings and matches with authenticati
 Before you begin, ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (version 16.x or higher)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
-- [PostgreSQL](https://www.postgresql.org/) (version 12 or higher)
 - [Git](https://git-scm.com/)
 
 ## Getting Started
@@ -62,7 +61,7 @@ npm install
 
 You have several options for setting up the database:
 
-1. **Supabase (Recommended for beginners)**:
+1. **Supabase (Recommended)**:
    - Create a free account at [Supabase](https://supabase.com)
    - Create a new project
    - Go to Project Settings → Database
@@ -70,11 +69,14 @@ You have several options for setting up the database:
    - Copy the connection string and replace `[YOUR-PASSWORD]` with your project password
 
 2. **Local PostgreSQL**:
-   - Install [PostgreSQL](https://www.postgresql.org/download/) locally
-   - Create a new database: `createdb rankly`
+   - Install [PostgreSQL](https://www.postgresql.org/download/) locally: `brew install postgresql@14`
+   - Start PostgreSQL Service: ```brew services start postgresql```
+   - Then enter postgreSQL: `psql postgres`
+   - Create the database: `CREATE DATABASE rankly;`
+   - Exit psql: `\q`
    - Your connection string will follow this format:
      ```
-     postgresql://username:password@localhost:5432/rankly
+     postgresql://admin:admin@localhost:5432/rankly
      ```
 
 3. **Other Hosted Options**:
@@ -93,8 +95,8 @@ DATABASE_URL= "transaction-pooler url from supabase"
 DIRECT_URL= "session-pooler url from supabase"
 
 # Option 2 - Local PostgreSQL
-DATABASE_URL="postgresql://username:password@localhost:5432/rankly"
-DIRECT_URL="postgresql://username:password@localhost:5432/rankly"
+DATABASE_URL="postgresql://admin:admin@localhost:5432/rankly"
+DIRECT_URL="postgresql://admin:admin@localhost:5432/rankly"
 
 # Authentication
 NEXTAUTH_URL="http://localhost:3000"  # Local development URL
@@ -113,9 +115,7 @@ NEXTAUTH_SECRET=""  # Add your generated secret here
    - Replace `[YOUR-PASSWORD]` with your project password
 
    **Option 2 - Local PostgreSQL:**
-   - Install PostgreSQL locally
-   - Create database: `createdb rankly`
-   - Replace `username` and `password` with your PostgreSQL credentials
+   - Copy above urls
    - Default port is usually 5432
 
 2. **NEXTAUTH_URL:**
@@ -143,20 +143,7 @@ npm run postinstall
 
 # Push the database schema to your database
 npx prisma db push
-
-# Run database migrations
-npx prisma migrate deploy
-
-# Seed the database with demo data
-npm run seed
 ```
-
-#### Demo Data Included:
-- Demo user account:
-  - Email: demo@example.com
-  - Password: demo123
-- Sample players with initial ELO ratings
-- Sample match history
 
 #### Verify Your Database:
 
@@ -176,15 +163,7 @@ If you encounter any issues:
    npx prisma db pull
    ```
 
-2. **Reset Database and Reseed** (⚠️ Warning: This will delete all data):
-   ```bash
-   # Reset your database and apply migrations
-   npx prisma migrate reset
-   # Seed with demo data
-   npm run seed
-   ```
-
-3. **Schema Issues**:
+2. **Schema Issues**:
    ```bash
    # Validate your schema
    npx prisma validate
