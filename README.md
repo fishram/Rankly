@@ -84,9 +84,6 @@ You have several options for setting up the database:
 
 Create a `.env.local` file in the root directory:
 
-### 4. Environment Setup
-
-Create a `.env.local` file in the root directory:
 
 ```env
 # Database:
@@ -150,9 +147,16 @@ npx prisma db push
 # Run database migrations
 npx prisma migrate deploy
 
-# Optional: Seed the database with initial data (if you have a seed file)
-npx prisma db seed
+# Seed the database with demo data
+npm run seed
 ```
+
+#### Demo Data Included:
+- Demo user account:
+  - Email: demo@example.com
+  - Password: demo123
+- Sample players with initial ELO ratings
+- Sample match history
 
 #### Verify Your Database:
 
