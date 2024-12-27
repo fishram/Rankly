@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import prisma from "../../../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.isAdmin) {
@@ -15,7 +11,8 @@ export async function PUT(
     }
 
     const { isActive } = await request.json();
-    const playerId = parseInt(context.params.id);
+    const id = request.url.split('/').pop();
+    const playerId = parseInt(id!);
 
     if (isActive === undefined) {
       return NextResponse.json(
