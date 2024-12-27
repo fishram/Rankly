@@ -62,7 +62,7 @@ npm install
 
 You have several options for setting up the database:
 
-1. **Supabase (Recommended for beginners)**:
+1. **Supabase (Recommended)**:
    - Create a free account at [Supabase](https://supabase.com)
    - Create a new project
    - Go to Project Settings → Database
