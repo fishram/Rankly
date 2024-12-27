@@ -31,7 +31,7 @@ export default function MatchHistory() {
   if (error) {
     return (
       <div className="max-w-md mx-auto py-4 px-4 mt-10">
-        <ErrorDisplay error={error} />
+        <ErrorDisplay error={error} onRetry={() => window.location.reload()} />
       </div>
     );
   }

@@ -66,7 +66,7 @@ export default function AdminPage() {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <ErrorDisplay error={error} />;
+  if (error) return <ErrorDisplay error={error} onRetry={() => window.location.reload()} />;
   if (!session?.user) return null;
 
   return (

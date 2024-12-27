@@ -93,7 +93,10 @@ export default function Page() {
 
       {error && (
         <div className="px-4">
-          <ErrorDisplay error={error} />
+          <ErrorDisplay 
+            error={error} 
+            onRetry={() => window.location.reload()} 
+          />
         </div>
       )}
 
