@@ -6,7 +6,7 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function PATCH(
     }
 
     const { isActive } = await request.json();
-    const playerId = parseInt(params.id);
+    const playerId = parseInt(context.params.id);
 
     if (isActive === undefined) {
       return NextResponse.json(
