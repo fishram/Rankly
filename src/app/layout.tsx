@@ -30,7 +30,16 @@ export default function RootLayout({
         <meta name='apple-mobile-web-app-title' content='Rankly' />
         <meta name='format-detection' content='telephone=no' />
         <meta name='mobile-web-app-capable' content='yes' />
-        <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
+        <meta name='msapplication-TileColor' content='#000000' />
+        <meta name='msapplication-tap-highlight' content='no' />
+        <meta name='theme-color' content='#000000' />
+        
+        <link rel='apple-touch-icon' href='/icons/192x192-icon.png' />
+        <link rel='icon' type='image/png' sizes='32x32' href='/icons/32x32-icon.png' />
+        <link rel='icon' type='image/png' sizes='16x16' href='/icons/16x16-icon.png' />
+        <link rel='manifest' href='/manifest.json' />
+        <link rel='mask-icon' href='/icons/safari-pinned-tab.svg' color='#000000' />
+        <link rel='shortcut icon' href='/favicon.ico' />
       </head>
       <body className="font-sans">
         <Providers>{children}</Providers>
