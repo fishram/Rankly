@@ -5,7 +5,6 @@ import { Player } from "@prisma/client";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import PageHeading from "../components/page_heading";
 
 export default function AdminPage() {
