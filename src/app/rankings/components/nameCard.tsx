@@ -26,7 +26,7 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
   const getCardStyle = () => {
     switch (rank) {
       case 1:
-        return "card shadow-xl w-full bg-gradient-to-r from-green-600 to-green-400 text-black w-11/12 mx-auto";
+        return "card shadow-xl bg-gradient-to-r from-green-600 to-green-400 text-black w-11/12 mx-auto";
       default:
         return "card bg-base-200 shadow-xl w-11/12 mx-auto";
     }
