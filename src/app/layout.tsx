@@ -40,6 +40,14 @@ export default function RootLayout({
         <link rel='manifest' href='/manifest.json' />
         <link rel='mask-icon' href='/icons/safari-pinned-tab.svg' color='#000000' />
         <link rel='shortcut icon' href='/favicon.ico' />
+        
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png" />
       </head>
       <body className="font-sans">
         <Providers>{children}</Providers>
