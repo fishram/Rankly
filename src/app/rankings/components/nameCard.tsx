@@ -7,17 +7,17 @@ interface NameCardProps {
     wins: number;
     highestElo: number;
   };
-  sortBy: 'rank' | 'matches' | 'peak';
+  sortBy: "rank" | "matches" | "peak";
 }
 
 export default function NameCard({ rank, player, sortBy }: NameCardProps) {
   const getValue = () => {
     switch (sortBy) {
-      case 'matches':
+      case "matches":
         return `${player.wins} wins`;
-      case 'peak':
+      case "peak":
         return `${player.highestElo} SR`;
-      case 'rank':
+      case "rank":
       default:
         return `${player.eloScore} SR`;
     }
@@ -26,9 +26,9 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
   const getCardStyle = () => {
     switch (rank) {
       case 1:
-        return "card shadow-xl w-full bg-gradient-to-r from-green-600 to-green-400 text-black";
+        return "card shadow-xl w-full bg-gradient-to-r from-green-600 to-green-400 text-black w-11/12 mx-auto";
       default:
-        return "card bg-base-200 shadow-xl w-full";
+        return "card bg-base-200 shadow-xl w-11/12 mx-auto";
     }
   };
 
@@ -52,7 +52,7 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
 
   return (
     <div className={getCardStyle()}>
-      <div className="card-body p-4 flex flex-row items-center justify-between">
+      <div className="card-body p-5 flex flex-row items-center justify-between">
         <div className="flex items-center gap-4">
           <div className={getRankStyle()}>{rank}</div>
           <div className={getNameStyle()}>{player.name}</div>
