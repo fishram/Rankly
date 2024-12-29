@@ -5,25 +5,34 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useFetchPlayers, useFetchAllPlayers } from "../hooks/useFetchPlayers";
 import { useFetchMatches } from "../hooks/useFetchMatches";
-import ErrorDisplay from '../components/ErrorDisplay';
+import ErrorDisplay from "../components/ErrorDisplay";
+import PageHeading from "../components/page_heading";
 
 export default function Page() {
   const { data: session, status } = useSession({ required: true });
   const { players, loading: playersLoading, error } = useFetchPlayers();
-  const { players: allPlayers, loading: allPlayersLoading } = useFetchAllPlayers();
+  const { players: allPlayers, loading: allPlayersLoading } =
+    useFetchAllPlayers();
   const { matches, loading: matchesLoading } = useFetchMatches();
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
   useEffect(() => {
     if (players && session?.user?.username) {
-      const currentPlayer = players.find(p => p.name === session.user.username);
+      const currentPlayer = players.find(
+        (p) => p.name === session.user.username
+      );
       if (currentPlayer) {
         setSelectedPlayer(currentPlayer.id);
       }
     }
   }, [players, session]);
 
-  if (status === "loading" || playersLoading || matchesLoading || allPlayersLoading) {
+  if (
+    status === "loading" ||
+    playersLoading ||
+    matchesLoading ||
+    allPlayersLoading
+  ) {
     return (
       <div className="h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
@@ -41,9 +50,12 @@ export default function Page() {
 
   // Calculate head-to-head records
   const getHeadToHeadStats = (playerId: string) => {
-    const stats = new Map<string, { wins: number; losses: number; eloChange: number }>();
+    const stats = new Map<
+      string,
+      { wins: number; losses: number; eloChange: number }
+    >();
 
-    matches.forEach(match => {
+    matches.forEach((match) => {
       let opponent: string;
       let isWin: boolean;
       const eloChange: number = 0;
@@ -58,7 +70,11 @@ export default function Page() {
         return;
       }
 
-      const current = stats.get(opponent) || { wins: 0, losses: 0, eloChange: 0 };
+      const current = stats.get(opponent) || {
+        wins: 0,
+        losses: 0,
+        eloChange: 0,
+      };
       stats.set(opponent, {
         wins: current.wins + (isWin ? 1 : 0),
         losses: current.losses + (isWin ? 0 : 1),
@@ -72,12 +88,7 @@ export default function Page() {
   return (
     <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
       {/* Heading and Back Link */}
-      <div className="w-full flex flex-row justify-between items-center px-4">
-        <h1 className="text-4xl font-bold">Statistics</h1>
-        <Link href="./" className="btn btn-outline px-4">
-          Back
-        </Link>
-      </div>
+      <PageHeading pageTitle="Statistics"></PageHeading>
 
       {/* Player Selection Dropdown */}
       <div className="w-full flex">
@@ -88,20 +99,20 @@ export default function Page() {
             className="btn btn-lg w-full text-xl text-black flex justify-center items-center"
           >
             <span>
-              {selectedPlayer 
-                ? players.find(p => p.id === selectedPlayer)?.name 
+              {selectedPlayer
+                ? players.find((p) => p.id === selectedPlayer)?.name
                 : "Select a Player"}
             </span>
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5" 
-              viewBox="0 0 20 20" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
               fill="currentColor"
             >
-              <path 
-                fillRule="evenodd" 
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" 
-                clipRule="evenodd" 
+              <path
+                fillRule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clipRule="evenodd"
               />
             </svg>
           </div>
@@ -111,7 +122,9 @@ export default function Page() {
           >
             {players.map((player) => (
               <li key={player.id}>
-                <a onClick={() => setSelectedPlayer(player.id)}>{player.name}</a>
+                <a onClick={() => setSelectedPlayer(player.id)}>
+                  {player.name}
+                </a>
               </li>
             ))}
           </ul>
@@ -123,10 +136,11 @@ export default function Page() {
           {/* SR Display */}
           <div className="flex flex-col items-center space-y-2 py-4">
             <div className="text-4xl font-bold">
-              {players.find(p => p.id === selectedPlayer)?.eloScore} SR
+              {players.find((p) => p.id === selectedPlayer)?.eloScore} SR
             </div>
             <div className="text-xl text-gray-400">
-              Peak: {players.find(p => p.id === selectedPlayer)?.highestElo} SR
+              Peak: {players.find((p) => p.id === selectedPlayer)?.highestElo}{" "}
+              SR
             </div>
           </div>
 
@@ -150,9 +164,13 @@ export default function Page() {
                     return totalGamesB - totalGamesA;
                   })
                   .map(([opponentId, stats]) => {
-                    const opponent = allPlayers.find(p => p.id === opponentId);
+                    const opponent = allPlayers.find(
+                      (p) => p.id === opponentId
+                    );
                     const totalGames = stats.wins + stats.losses;
-                    const winRate = ((stats.wins / totalGames) * 100).toFixed(1);
+                    const winRate = ((stats.wins / totalGames) * 100).toFixed(
+                      1
+                    );
 
                     return (
                       <tr key={opponentId}>
@@ -165,12 +183,18 @@ export default function Page() {
                         <td>
                           <div className="flex items-center gap-2">
                             <div className="hidden sm:flex w-full max-w-24 h-2 bg-base-200 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full ${Number(winRate) >= 50 ? 'bg-success' : 'bg-error'}`}
+                              <div
+                                className={`h-full ${
+                                  Number(winRate) >= 50
+                                    ? "bg-success"
+                                    : "bg-error"
+                                }`}
                                 style={{ width: `${winRate}%` }}
                               />
                             </div>
-                            <span className="text-sm whitespace-nowrap">{winRate}%</span>
+                            <span className="text-sm whitespace-nowrap">
+                              {winRate}%
+                            </span>
                           </div>
                         </td>
                         <td className="text-right">{totalGames}</td>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { useRouter } from "next/navigation";
+import PageHeading from "../components/page_heading";
 
 export default function Page() {
   const { data: session, update: updateSession, status } = useSession();
@@ -43,14 +44,14 @@ export default function Page() {
 
       // Get the updated user data
       const updatedUser = await response.json();
-      
+
       // Update the session with new data
       await updateSession({
         ...session,
         user: {
           ...session.user,
-          username: updatedUser.username
-        }
+          username: updatedUser.username,
+        },
       });
 
       // Force a router refresh to update any cached data
@@ -69,7 +70,7 @@ export default function Page() {
   // Show loading state while checking session
   if (status === "loading") {
     return (
-      <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex justify-center">
+      <div className="h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
@@ -84,18 +85,13 @@ export default function Page() {
   return (
     <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
       {/* Header */}
-      <div className="w-full flex flex-row items-center justify-between px-4">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <Link href="./" className="btn btn-outline px-4">
-          Back
-        </Link>
-      </div>
+      <PageHeading pageTitle="Settings"></PageHeading>
 
       {error && (
         <div className="px-4">
-          <ErrorDisplay 
-            error={error} 
-            onRetry={() => window.location.reload()} 
+          <ErrorDisplay
+            error={error}
+            onRetry={() => window.location.reload()}
           />
         </div>
       )}
@@ -118,7 +114,7 @@ export default function Page() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                 />
-                <button 
+                <button
                   className={`btn btn-primary ${isLoading ? "loading" : ""}`}
                   onClick={handleUpdateName}
                   disabled={isLoading || newName === session?.user?.username}
@@ -134,7 +130,7 @@ export default function Page() {
         <div className="card bg-base-200 shadow-lg w-full">
           <div className="card-body">
             <h2 className="card-title">Account</h2>
-            <button 
+            <button
               className="btn btn-error w-full sm:w-auto"
               onClick={handleLogout}
             >

@@ -9,6 +9,7 @@ import ErrorDisplay from "../components/ErrorDisplay";
 import { useKFactor } from "../hooks/useKFactor";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import PageHeading from "../components/page_heading";
 
 export default function Page() {
   const { players, loading, error, setPlayers } = useFetchPlayers();
@@ -41,7 +42,7 @@ export default function Page() {
   // Auto-populate player1 with the current user's player
   useEffect(() => {
     if (players.length > 0 && session?.user?.id) {
-      const userPlayer = players.find(p => p.userId === session.user.id);
+      const userPlayer = players.find((p) => p.userId === session.user.id);
       if (userPlayer) {
         setPlayer1(userPlayer);
       }
@@ -65,7 +66,12 @@ export default function Page() {
     }
   }, [player1, player2, kFactor]);
 
-  if (loading || status === "loading") return null;
+  if (loading || status === "loading")
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
   if (error) {
     return (
       <div className="max-w-md mx-auto py-4 px-4 mt-10">
@@ -89,12 +95,8 @@ export default function Page() {
     const matchWinner = winner.id === player1.id ? "player1" : "player2";
 
     // 3. Calculate new Elo ratings
-    const { newPlayer1Elo, newPlayer2Elo, player1Change, player2Change } = calculateElo(
-      player1.eloScore,
-      player2.eloScore,
-      matchWinner,
-      kFactor
-    );
+    const { newPlayer1Elo, newPlayer2Elo, player1Change, player2Change } =
+      calculateElo(player1.eloScore, player2.eloScore, matchWinner, kFactor);
 
     setEloChanges({
       player1Change,
@@ -102,7 +104,6 @@ export default function Page() {
       newPlayer1Elo,
       newPlayer2Elo,
     });
-
 
     setMatchCompleted(true);
 
@@ -126,16 +127,17 @@ export default function Page() {
       }
 
       // Update the players list with new Elo scores
-      setPlayers(players.map(p => {
-        if (p.id === player1.id) {
-          return { ...p, eloScore: newPlayer1Elo };
-        }
-        if (p.id === player2.id) {
-          return { ...p, eloScore: newPlayer2Elo };
-        }
-        return p;
-      }));
-
+      setPlayers(
+        players.map((p) => {
+          if (p.id === player1.id) {
+            return { ...p, eloScore: newPlayer1Elo };
+          }
+          if (p.id === player2.id) {
+            return { ...p, eloScore: newPlayer2Elo };
+          }
+          return p;
+        })
+      );
     } catch (err: unknown) {
       console.error(err);
       setMatchCompleted(false);
@@ -146,20 +148,13 @@ export default function Page() {
   return (
     <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
       {/* Heading and Back Link */}
-      <div className="w-full flex flex-row justify-between items-center px-4">
-        <h1 className="text-4xl font-bold">New Match</h1>
-        <Link href="./" className="btn btn-outline px-4">
-          Back
-        </Link>
-      </div>
+      <PageHeading pageTitle="New Match"></PageHeading>
 
       {/* Player Selection Row */}
       <div className="w-full flex flex-row justify-center space-x-4">
         {/* Player 1 Display (not selectable) */}
         <div className="w-40">
-          <div
-            className="btn w-40 text-lg truncate btn-primary"
-          >
+          <div className="btn w-40 text-lg truncate btn-primary">
             {player1 ? player1.name : "Loading..."}
           </div>
         </div>
@@ -180,7 +175,7 @@ export default function Page() {
             className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
           >
             {players
-              .filter(p => p.id !== player1?.id)
+              .filter((p) => p.id !== player1?.id)
               .map((p) => (
                 <li key={p.id}>
                   <a onClick={() => setPlayer2(p)}>{p.name}</a>
@@ -195,15 +190,28 @@ export default function Page() {
         <div className="text-center w-40 h-16 flex flex-col items-center justify-center">
           {player1 && (
             <>
-              <div className={`text-2xl ${matchCompleted ? 'animate-score' : ''}`}>
-                {matchCompleted ? `${eloChanges?.newPlayer1Elo} SR` : `${player1.eloScore} SR`}
+              <div
+                className={`text-2xl ${matchCompleted ? "animate-score" : ""}`}
+              >
+                {matchCompleted
+                  ? `${eloChanges?.newPlayer1Elo} SR`
+                  : `${player1.eloScore} SR`}
               </div>
               {matchCompleted ? (
-                <div className={`text-smd animate-elo-change ${
-                  eloChanges ? (eloChanges.player1Change >= 0 ? 'text-success' : 'text-error') : ''
-                }`}>
+                <div
+                  className={`text-smd animate-elo-change ${
+                    eloChanges
+                      ? eloChanges.player1Change >= 0
+                        ? "text-success"
+                        : "text-error"
+                      : ""
+                  }`}
+                >
                   {eloChanges && (
-                    <>{eloChanges.player1Change >= 0 ? '+' : ''}{eloChanges.player1Change}</>
+                    <>
+                      {eloChanges.player1Change >= 0 ? "+" : ""}
+                      {eloChanges.player1Change}
+                    </>
                   )}
                 </div>
               ) : (
@@ -211,9 +219,17 @@ export default function Page() {
                   <>
                     <div className="text-sm text-gray-400">{`${probabilities.player1}% chance`}</div>
                     <div className="text-sm text-gray-400">
-                      {probabilities.player1 >= 50 
-                        ? `-${Math.round((probabilities.player1 / (100 - probabilities.player1)) * 100)}` 
-                        : `+${Math.round((100 - probabilities.player1) / probabilities.player1 * 100)}`}
+                      {probabilities.player1 >= 50
+                        ? `-${Math.round(
+                            (probabilities.player1 /
+                              (100 - probabilities.player1)) *
+                              100
+                          )}`
+                        : `+${Math.round(
+                            ((100 - probabilities.player1) /
+                              probabilities.player1) *
+                              100
+                          )}`}
                     </div>
                   </>
                 )
@@ -224,15 +240,28 @@ export default function Page() {
         <div className="text-center w-40 h-16 flex flex-col items-center justify-center">
           {player2 && (
             <>
-              <div className={`text-2xl ${matchCompleted ? 'animate-score' : ''}`}>
-                {matchCompleted ? `${eloChanges?.newPlayer2Elo} SR` : `${player2.eloScore} SR`}
+              <div
+                className={`text-2xl ${matchCompleted ? "animate-score" : ""}`}
+              >
+                {matchCompleted
+                  ? `${eloChanges?.newPlayer2Elo} SR`
+                  : `${player2.eloScore} SR`}
               </div>
               {matchCompleted ? (
-                <div className={`text-md animate-elo-change ${
-                  eloChanges ? (eloChanges.player2Change >= 0 ? 'text-success' : 'text-error') : ''
-                }`}>
+                <div
+                  className={`text-md animate-elo-change ${
+                    eloChanges
+                      ? eloChanges.player2Change >= 0
+                        ? "text-success"
+                        : "text-error"
+                      : ""
+                  }`}
+                >
                   {eloChanges && (
-                    <>{eloChanges.player2Change >= 0 ? '+' : ''}{eloChanges.player2Change}</>
+                    <>
+                      {eloChanges.player2Change >= 0 ? "+" : ""}
+                      {eloChanges.player2Change}
+                    </>
                   )}
                 </div>
               ) : (
@@ -240,9 +269,17 @@ export default function Page() {
                   <>
                     <div className="text-sm text-gray-400">{`${probabilities.player2}% chance`}</div>
                     <div className="text-sm text-gray-400">
-                      {probabilities.player2 >= 50 
-                        ? `-${Math.round((probabilities.player2 / (100 - probabilities.player2)) * 100)}` 
-                        : `+${Math.round((100 - probabilities.player2) / probabilities.player2 * 100)}`}
+                      {probabilities.player2 >= 50
+                        ? `-${Math.round(
+                            (probabilities.player2 /
+                              (100 - probabilities.player2)) *
+                              100
+                          )}`
+                        : `+${Math.round(
+                            ((100 - probabilities.player2) /
+                              probabilities.player2) *
+                              100
+                          )}`}
                     </div>
                   </>
                 )
@@ -310,10 +347,12 @@ export default function Page() {
               setPlayer2(null);
               setWinner(null);
               setProbabilities(null);
-              
+
               // Re-populate player1 with the current user's player
               if (session?.user?.id) {
-                const userPlayer = players.find(p => p.userId === session.user.id);
+                const userPlayer = players.find(
+                  (p) => p.userId === session.user.id
+                );
                 if (userPlayer) {
                   setPlayer1(userPlayer);
                 }
@@ -335,10 +374,12 @@ export default function Page() {
             setPlayer2(null);
             setWinner(null);
             setProbabilities(null);
-            
+
             // Re-populate player1 with the current user's player
             if (session?.user?.id) {
-              const userPlayer = players.find(p => p.userId === session.user.id);
+              const userPlayer = players.find(
+                (p) => p.userId === session.user.id
+              );
               if (userPlayer) {
                 setPlayer1(userPlayer);
               }
