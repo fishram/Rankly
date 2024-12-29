@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
 import { useState, useEffect } from "react";
 import { Player } from "../types/player";

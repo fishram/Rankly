@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useFetchPlayers, useFetchAllPlayers } from "../hooks/useFetchPlayers";

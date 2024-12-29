@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 interface PageHeadingI {
-  pageTitle: String;
+  pageTitle: string;
 }
 
 export default function PageHeading({ pageTitle }: PageHeadingI) {

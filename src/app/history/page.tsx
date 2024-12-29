@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useFetchMatches } from "../hooks/useFetchMatches";
 import { format } from "date-fns";
 import ErrorDisplay from "../components/ErrorDisplay";

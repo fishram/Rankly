@@ -1,7 +1,6 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { useRouter } from "next/navigation";

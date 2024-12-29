@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
 import ErrorDisplay from "../components/ErrorDisplay";
