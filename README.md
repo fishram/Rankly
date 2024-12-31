@@ -1,5 +1,8 @@
 # Rankly
 
+<img width="315" alt="Screenshot 2024-12-31 at 12 03 18 PM" src="https://github.com/user-attachments/assets/6518443a-4916-4557-bdc5-ac39dbd47d70" />
+
+
 A Next.js application for tracking player rankings and matches with authentication functionality.
 
 ## Features
