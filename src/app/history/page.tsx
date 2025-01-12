@@ -29,6 +29,14 @@ export default function MatchHistory() {
     );
   }, [matches, selectedPlayer]);
 
+  const handleDropdownClick = (callback: () => void) => {
+    const elem = document.activeElement as HTMLElement;
+    if (elem) {
+      elem.blur();
+    }
+    callback();
+  };
+
   if (loading)
     return (
       <div className="h-screen flex items-center justify-center">
@@ -60,11 +68,15 @@ export default function MatchHistory() {
             className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
           >
             <li>
-              <a onClick={() => setSelectedPlayer("")}>All Players</a>
+              <a onClick={() => handleDropdownClick(() => setSelectedPlayer(""))}>
+                All Players
+              </a>
             </li>
             {players.map((player) => (
               <li key={player}>
-                <a onClick={() => setSelectedPlayer(player)}>{player}</a>
+                <a onClick={() => handleDropdownClick(() => setSelectedPlayer(player))}>
+                  {player}
+                </a>
               </li>
             ))}
           </ul>

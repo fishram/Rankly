@@ -15,6 +15,14 @@ export default function Page() {
   const { matches, loading: matchesLoading } = useFetchMatches();
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 
+  const handleDropdownClick = (callback: () => void) => {
+    const elem = document.activeElement as HTMLElement;
+    if (elem) {
+      elem.blur();
+    }
+    callback();
+  };
+
   useEffect(() => {
     if (players && session?.user?.username) {
       const currentPlayer = players.find(
@@ -121,7 +129,7 @@ export default function Page() {
           >
             {players.map((player) => (
               <li key={player.id}>
-                <a onClick={() => setSelectedPlayer(player.id)}>
+                <a onClick={() => handleDropdownClick(() => setSelectedPlayer(player.id))}>
                   {player.name}
                 </a>
               </li>

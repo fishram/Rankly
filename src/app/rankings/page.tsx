@@ -27,7 +27,7 @@ export default function Page() {
   }
 
   const sortedPlayers = [...players]
-    .filter((player) => player.isActive)
+    .filter((player) => player.isActive && (player.wins + player.losses) >= 5)
     .sort((a, b) => {
       switch (sortBy) {
         case "matches":
@@ -39,6 +39,14 @@ export default function Page() {
           return b.eloScore - a.eloScore;
       }
     });
+
+  const handleClick = (newSortBy: "rank" | "matches" | "peak") => {
+    setSortBy(newSortBy);
+    const elem = document.activeElement;
+    if (elem) {
+      (elem as HTMLElement).blur();
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
@@ -72,17 +80,20 @@ export default function Page() {
             className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
           >
             <li>
-              <a onClick={() => setSortBy("rank")}>Current Rank</a>
+              <a onClick={() => handleClick("rank")}>Current Rank</a>
             </li>
             <li>
-              <a onClick={() => setSortBy("matches")}>Matches Won</a>
+              <a onClick={() => handleClick("matches")}>Matches Won</a>
             </li>
             <li>
-              <a onClick={() => setSortBy("peak")}>Peak SR</a>
+              <a onClick={() => handleClick("peak")}>Peak SR</a>
             </li>
           </ul>
         </div>
+        
       </div>
+
+
     </div>
   );
 }

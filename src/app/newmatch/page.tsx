@@ -65,6 +65,14 @@ export default function Page() {
     }
   }, [player1, player2, kFactor]);
 
+  const handleDropdownClick = (callback: () => void) => {
+    const elem = document.activeElement as HTMLElement;
+    if (elem) {
+      elem.blur();
+    }
+    callback();
+  };
+
   if (loading || status === "loading")
     return (
       <div className="h-screen flex items-center justify-center">
@@ -177,7 +185,11 @@ export default function Page() {
               .filter((p) => p.id !== player1?.id)
               .map((p) => (
                 <li key={p.id}>
-                  <a onClick={() => setPlayer2(p)}>{p.name}</a>
+                  <a
+                    onClick={() => handleDropdownClick(() => setPlayer2(p))}
+                  >
+                    {p.name}
+                  </a>
                 </li>
               ))}
           </ul>
@@ -312,18 +324,22 @@ export default function Page() {
             >
               <li>
                 <a
-                  onClick={() => {
-                    if (player1) setWinner(player1);
-                  }}
+                  onClick={() => 
+                    handleDropdownClick(() => {
+                      if (player1) setWinner(player1);
+                    })
+                  }
                 >
                   {player1 ? player1.name : "Player 1 not selected"}
                 </a>
               </li>
               <li>
                 <a
-                  onClick={() => {
-                    if (player2) setWinner(player2);
-                  }}
+                  onClick={() => 
+                    handleDropdownClick(() => {
+                      if (player2) setWinner(player2);
+                    })
+                  }
                 >
                   {player2 ? player2.name : "Player 2 not selected"}
                 </a>
