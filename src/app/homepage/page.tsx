@@ -2,14 +2,34 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { usePlayer } from "@/contexts/PlayerContext";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const { data: session } = useSession();
+  const { currentPlayer, loading, refreshPlayers } = usePlayer();
+
+  const isAtPeak = currentPlayer && currentPlayer.eloScore >= currentPlayer.highestElo;
+
+  useEffect(() => {
+    refreshPlayers();
+  }, [refreshPlayers]);
 
   return (
     <>
       <div className="pb-20 flex flex-col items-center justify-center h-screen">
-        <h1 className="text-8xl font-bold pb-14">Rankly</h1>
+        <h1 className="text-8xl font-bold pb-4">Rankly</h1>
+        
+        {currentPlayer && (
+          <div className={`text-4xl font-semibold mb-7 ${isAtPeak ? 'text-yellow-400' : 'opacity-90'}`}>
+            {currentPlayer.eloScore} SR
+          </div>
+        )}
+        {loading && (
+          <div className="text-2xl font-semibold mb-8 opacity-50">
+            Loading...
+          </div>
+        )}
 
         <nav>
           <div className="grid-cols-2 grid gap-4">

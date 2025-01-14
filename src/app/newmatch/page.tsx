@@ -158,7 +158,7 @@ export default function Page() {
       <PageHeading pageTitle="New Match"></PageHeading>
 
       {/* Player Selection Row */}
-      <div className="w-full flex flex-row justify-center space-x-4">
+      <div className="w-full flex flex-row justify-center space-x-4 pt-5">
         {/* Player 1 Display (not selectable) */}
         <div className="w-40">
           <div className="btn w-40 text-lg truncate btn-primary">
@@ -202,7 +202,7 @@ export default function Page() {
           {player1 && (
             <>
               <div
-                className={`text-2xl ${matchCompleted ? "animate-score" : ""}`}
+                className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
               >
                 {matchCompleted
                   ? `${eloChanges?.newPlayer1Elo} SR`
@@ -210,7 +210,7 @@ export default function Page() {
               </div>
               {matchCompleted ? (
                 <div
-                  className={`text-smd animate-elo-change ${
+                  className={`text-xl animate-elo-change ${
                     eloChanges
                       ? eloChanges.player1Change >= 0
                         ? "text-success"
@@ -252,7 +252,7 @@ export default function Page() {
           {player2 && (
             <>
               <div
-                className={`text-2xl ${matchCompleted ? "animate-score" : ""}`}
+                className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
               >
                 {matchCompleted
                   ? `${eloChanges?.newPlayer2Elo} SR`
@@ -260,7 +260,7 @@ export default function Page() {
               </div>
               {matchCompleted ? (
                 <div
-                  className={`text-md animate-elo-change ${
+                  className={`text-xl animate-elo-change ${
                     eloChanges
                       ? eloChanges.player2Change >= 0
                         ? "text-success"
@@ -302,8 +302,8 @@ export default function Page() {
 
       {/* Winner Section - Only show if match not completed */}
       {!matchCompleted && (
-        <div className="flex flex-col items-center gap-6">
-          <h1 className="text-3xl font-bold">Winner</h1>
+        <div className="flex flex-col items-center gap-6 pt-4">
+          <h1 className="text-4xl font-bold">Winner</h1>
           <div className="dropdown dropdown-hover">
             <div
               tabIndex={0}

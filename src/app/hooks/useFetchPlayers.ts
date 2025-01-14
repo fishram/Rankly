@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Player } from "../types/player";
 import { getErrorMessage } from '../utils/errorHandling';
 
-export function useFetchPlayers() {
+export function useFetchPlayers(refreshKey: number = 0) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,12 +24,12 @@ export function useFetchPlayers() {
       }
     }
     fetchPlayers();
-  }, []);
+  }, [refreshKey]);
 
   return { players, loading, error, setPlayers };
 }
 
-export function useFetchAllPlayers() {
+export function useFetchAllPlayers(refreshKey: number = 0) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export function useFetchAllPlayers() {
       }
     }
     fetchPlayers();
-  }, []);
+  }, [refreshKey]);
 
   return { players, loading, error };
 }
