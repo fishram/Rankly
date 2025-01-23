@@ -11,14 +11,17 @@ export default function AdminPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingElo, setEditingElo] = useState<{[key: number]: number}>({});
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
+    } else if (status === "authenticated" && !session?.user?.isAdmin) {
+      router.push("/");
     }
-  }, [status, router]);
+  }, [status, router, session?.user?.isAdmin]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -65,6 +68,40 @@ export default function AdminPage() {
     }
   };
 
+  const updatePlayerElo = async (playerId: number) => {
+    try {
+      const newElo = editingElo[playerId];
+      if (newElo === undefined) return;
+
+      const res = await fetch("/api/players", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: playerId,
+          eloScore: newElo,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update player Elo");
+
+      // Update local state
+      setPlayers(
+        players.map((p) =>
+          p.id === playerId ? { ...p, eloScore: newElo } : p
+        )
+      );
+      
+      // Clear editing state
+      const newEditingElo = { ...editingElo };
+      delete newEditingElo[playerId];
+      setEditingElo(newEditingElo);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    }
+  };
+
   if (loading)
     return (
       <div className="h-screen flex items-center justify-center">
@@ -103,7 +140,51 @@ export default function AdminPage() {
               >
                 <td>{player.name}</td>
                 <td>{player.isActive ? "Active" : "Inactive"}</td>
-                <td>{player.eloScore}</td>
+                <td>
+                  {editingElo[player.id] !== undefined ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={editingElo[player.id]}
+                        onChange={(e) => setEditingElo({
+                          ...editingElo,
+                          [player.id]: parseInt(e.target.value)
+                        })}
+                        className="input input-bordered input-sm w-24"
+                      />
+                      <button
+                        onClick={() => updatePlayerElo(player.id)}
+                        className="btn btn-sm btn-success"
+                        disabled={editingElo[player.id] === undefined || isNaN(editingElo[player.id])}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          const newEditingElo = { ...editingElo };
+                          delete newEditingElo[player.id];
+                          setEditingElo(newEditingElo);
+                        }}
+                        className="btn btn-sm btn-error"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 items-center">
+                      {player.eloScore}
+                      <button
+                        onClick={() => setEditingElo({
+                          ...editingElo,
+                          [player.id]: player.eloScore
+                        })}
+                        className="btn btn-sm btn-ghost"
+                      >
+                        ✏️
+                      </button>
+                    </div>
+                  )}
+                </td>
                 <td>{player.wins}</td>
                 <td>{player.losses}</td>
                 <td>

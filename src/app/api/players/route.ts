@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma }from "../../../../lib/prisma";
 import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 import { NextRequest } from "next/server";
 
 export async function GET(req: Request) {
@@ -89,7 +91,12 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     await prisma.$connect();
-    const token = await getToken({ req });
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.isAdmin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id, name, eloScore } = await req.json();
 
     if (!id || (!name && eloScore === undefined)) {
@@ -107,13 +114,6 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(
         { error: "Player not found" },
         { status: 404 }
-      );
-    }
-
-    if (player.userId && player.userId !== token?.sub) {
-      return NextResponse.json(
-        { error: "Unauthorized to modify this player" },
-        { status: 403 }
       );
     }
 
