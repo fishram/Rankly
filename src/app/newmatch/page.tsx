@@ -1,6 +1,7 @@
 "use client";
 
 import { useFetchPlayers } from "../hooks/useFetchPlayers";
+import { useFetchMatches } from "../hooks/useFetchMatches";
 import { useState, useEffect } from "react";
 import { Player } from "../types/player";
 import calculateElo from "../../../lib/calculateElo";
@@ -12,6 +13,8 @@ import PageHeading from "../components/page_heading";
 
 export default function Page() {
   const { players, loading, error, setPlayers } = useFetchPlayers();
+  const [matchesRefreshKey, setMatchesRefreshKey] = useState(0);
+  const { matches, loading: matchesLoading } = useFetchMatches(matchesRefreshKey);
   const { kFactor } = useKFactor();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -29,6 +32,10 @@ export default function Page() {
     player2Change: number;
     newPlayer1Elo: number;
     newPlayer2Elo: number;
+  } | null>(null);
+  const [headToHead, setHeadToHead] = useState<{
+    player1Wins: number;
+    player2Wins: number;
   } | null>(null);
 
   // Redirect if not authenticated
@@ -60,10 +67,37 @@ export default function Page() {
         player1: player1WinProbability,
         player2: player2WinProbability,
       });
+
+      // Calculate head-to-head record when player2 is selected
+      const h2h = calculateHeadToHead(player1.id, player2.id);
+      setHeadToHead(h2h);
     } else {
       setProbabilities(null);
+      setHeadToHead(null);
     }
-  }, [player1, player2, kFactor]);
+  }, [player1, player2, kFactor, matches]);
+
+  // Calculate head-to-head record from existing matches only
+  const calculateHeadToHead = (p1Id: string, p2Id: string) => {
+    let p1Wins = 0;
+    let p2Wins = 0;
+
+    // Count existing matches
+    matches.forEach((match) => {
+      if (
+        (match.player1.id === p1Id && match.player2.id === p2Id) ||
+        (match.player1.id === p2Id && match.player2.id === p1Id)
+      ) {
+        if (match.winner.id === p1Id) {
+          p1Wins++;
+        } else if (match.winner.id === p2Id) {
+          p2Wins++;
+        }
+      }
+    });
+
+    return { player1Wins: p1Wins, player2Wins: p2Wins };
+  };
 
   const handleDropdownClick = (callback: () => void) => {
     const elem = document.activeElement as HTMLElement;
@@ -73,7 +107,7 @@ export default function Page() {
     callback();
   };
 
-  if (loading || status === "loading")
+  if (loading || status === "loading" || matchesLoading)
     return (
       <div className="h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
@@ -112,8 +146,6 @@ export default function Page() {
       newPlayer2Elo,
     });
 
-    setMatchCompleted(true);
-
     // 4. Update the database
     try {
       const response = await fetch("/api/matches", {
@@ -145,6 +177,12 @@ export default function Page() {
           return p;
         })
       );
+
+      // Trigger a refetch of matches
+      setMatchesRefreshKey(prev => prev + 1);
+      
+      setMatchCompleted(true);
+
     } catch (err: unknown) {
       console.error(err);
       setMatchCompleted(false);
@@ -196,105 +234,124 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Score Display Row */}
-      <div className="w-full flex flex-row items-center justify-center space-x-4">
-        <div className="text-center w-40 h-16 flex flex-col items-center justify-center">
-          {player1 && (
-            <>
-              <div
-                className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
-              >
-                {matchCompleted
-                  ? `${eloChanges?.newPlayer1Elo} SR`
-                  : `${player1.eloScore} SR`}
-              </div>
-              {matchCompleted ? (
+      {/* Stats Container - Fixed height to prevent shifting */}
+      <div className="w-full h-48 flex flex-col items-center justify-center space-y-6">
+        {/* Score Display Row */}
+        <div className="w-full flex flex-row items-center justify-center space-x-4 h-16">
+          <div className="text-center w-40 flex flex-col items-center justify-center">
+            {player1 && (
+              <>
                 <div
-                  className={`text-xl animate-elo-change ${
-                    eloChanges
-                      ? eloChanges.player1Change >= 0
-                        ? "text-success"
-                        : "text-error"
-                      : ""
-                  }`}
+                  className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
                 >
-                  {eloChanges && (
-                    <>
-                      {eloChanges.player1Change >= 0 ? "+" : ""}
-                      {eloChanges.player1Change}
-                    </>
-                  )}
+                  {matchCompleted
+                    ? `${eloChanges?.newPlayer1Elo} SR`
+                    : `${player1.eloScore} SR`}
                 </div>
-              ) : (
-                probabilities && (
-                  <>
-                    <div className="text-sm text-gray-400">{`${probabilities.player1}% chance`}</div>
-                    <div className="text-sm text-gray-400">
-                      {probabilities.player1 >= 50
-                        ? `-${Math.round(
-                            (probabilities.player1 /
-                              (100 - probabilities.player1)) *
-                              100
-                          )}`
-                        : `+${Math.round(
-                            ((100 - probabilities.player1) /
-                              probabilities.player1) *
-                              100
-                          )}`}
-                    </div>
-                  </>
-                )
-              )}
-            </>
-          )}
+                {matchCompleted ? (
+                  <div
+                    className={`text-xl animate-elo-change ${
+                      eloChanges
+                        ? eloChanges.player1Change >= 0
+                          ? "text-success"
+                          : "text-error"
+                        : ""
+                    }`}
+                  >
+                    {eloChanges && (
+                      <>
+                        {eloChanges.player1Change >= 0 ? "+" : ""}
+                        {eloChanges.player1Change}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  probabilities && (
+                    <>
+                      <div className="text-sm text-gray-400">{`${probabilities.player1}% chance`}</div>
+                      <div className="text-sm text-gray-400">
+                        {probabilities.player1 >= 50
+                          ? `-${Math.round(
+                              (probabilities.player1 /
+                                (100 - probabilities.player1)) *
+                                100
+                            )}`
+                          : `+${Math.round(
+                              ((100 - probabilities.player1) /
+                                probabilities.player1) *
+                                100
+                            )}`}
+                      </div>
+                    </>
+                  )
+                )}
+              </>
+            )}
+          </div>
+          <div className="text-center w-40 flex flex-col items-center justify-center">
+            {player2 && (
+              <>
+                <div
+                  className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
+                >
+                  {matchCompleted
+                    ? `${eloChanges?.newPlayer2Elo} SR`
+                    : `${player2.eloScore} SR`}
+                </div>
+                {matchCompleted ? (
+                  <div
+                    className={`text-xl animate-elo-change ${
+                      eloChanges
+                        ? eloChanges.player2Change >= 0
+                          ? "text-success"
+                          : "text-error"
+                        : ""
+                    }`}
+                  >
+                    {eloChanges && (
+                      <>
+                        {eloChanges.player2Change >= 0 ? "+" : ""}
+                        {eloChanges.player2Change}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  probabilities && (
+                    <>
+                      <div className="text-sm text-gray-400">{`${probabilities.player2}% chance`}</div>
+                      <div className="text-sm text-gray-400">
+                        {probabilities.player2 >= 50
+                          ? `-${Math.round(
+                              (probabilities.player2 /
+                                (100 - probabilities.player2)) *
+                                100
+                            )}`
+                          : `+${Math.round(
+                              ((100 - probabilities.player2) /
+                                probabilities.player2) *
+                                100
+                            )}`}
+                      </div>
+                    </>
+                  )
+                )}
+              </>
+            )}
+          </div>
         </div>
-        <div className="text-center w-40 h-16 flex flex-col items-center justify-center">
-          {player2 && (
+
+        {/* Head to Head Record - Fixed height container */}
+        <div className="h-24 flex flex-col items-center justify-center">
+          {player1 && player2 && headToHead && (
             <>
-              <div
-                className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
-              >
-                {matchCompleted
-                  ? `${eloChanges?.newPlayer2Elo} SR`
-                  : `${player2.eloScore} SR`}
+              <div className="text-2xl font-semibold mb-2">Head to Head</div>
+              <div className="flex items-center gap-4">
+                <span className="text-xl">
+                  <span className="text-primary text-4xl font-bold"> {headToHead.player1Wins}</span>
+                  <span className="text-4xl font-bold"> - </span>
+                  <span className="text-secondary text-4xl font-bold">{headToHead.player2Wins}</span>
+                </span>
               </div>
-              {matchCompleted ? (
-                <div
-                  className={`text-xl animate-elo-change ${
-                    eloChanges
-                      ? eloChanges.player2Change >= 0
-                        ? "text-success"
-                        : "text-error"
-                      : ""
-                  }`}
-                >
-                  {eloChanges && (
-                    <>
-                      {eloChanges.player2Change >= 0 ? "+" : ""}
-                      {eloChanges.player2Change}
-                    </>
-                  )}
-                </div>
-              ) : (
-                probabilities && (
-                  <>
-                    <div className="text-sm text-gray-400">{`${probabilities.player2}% chance`}</div>
-                    <div className="text-sm text-gray-400">
-                      {probabilities.player2 >= 50
-                        ? `-${Math.round(
-                            (probabilities.player2 /
-                              (100 - probabilities.player2)) *
-                              100
-                          )}`
-                        : `+${Math.round(
-                            ((100 - probabilities.player2) /
-                              probabilities.player2) *
-                              100
-                          )}`}
-                    </div>
-                  </>
-                )
-              )}
             </>
           )}
         </div>
@@ -302,7 +359,7 @@ export default function Page() {
 
       {/* Winner Section - Only show if match not completed */}
       {!matchCompleted && (
-        <div className="flex flex-col items-center gap-6 pt-4">
+        <div className="flex flex-col items-center gap-6">
           <h1 className="text-4xl font-bold">Winner</h1>
           <div className="dropdown dropdown-hover">
             <div
@@ -347,34 +404,14 @@ export default function Page() {
             </ul>
           </div>
           <button
-            className={`btn btn-lg mt-16 ${
+            className={`btn btn-lg btn-wide mt-10 text-xl ${
               player1 && player2 && winner
-                ? "btn-outline btn-accent"
+                ? "btn-accent"
                 : "btn-disabled"
             }`}
             onClick={handleConfirmMatch}
           >
             Confirm Match
-          </button>
-          <button
-            className="btn btn-outline px-10"
-            onClick={() => {
-              setPlayer2(null);
-              setWinner(null);
-              setProbabilities(null);
-
-              // Re-populate player1 with the current user's player
-              if (session?.user?.id) {
-                const userPlayer = players.find(
-                  (p) => p.userId === session.user.id
-                );
-                if (userPlayer) {
-                  setPlayer1(userPlayer);
-                }
-              }
-            }}
-          >
-            Reset
           </button>
         </div>
       )}
@@ -389,6 +426,7 @@ export default function Page() {
             setPlayer2(null);
             setWinner(null);
             setProbabilities(null);
+            setHeadToHead(null);
 
             // Re-populate player1 with the current user's player
             if (session?.user?.id) {

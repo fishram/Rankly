@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Match } from "../types/match";
 
-export function useFetchMatches() {
+export function useFetchMatches(refreshKey: number = 0) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, isLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export function useFetchMatches() {
       }
     }
     fetchMatches();
-  }, []);
+  }, [refreshKey]);
 
   return { matches, loading, error };
 } 

@@ -54,7 +54,7 @@ export default function Page() {
       <PageHeading pageTitle="Rankings"></PageHeading>
 
       {/* Cards Container */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 pt-4">
         {sortedPlayers.map((player, index) => (
           <NameCard
             key={player.id}
