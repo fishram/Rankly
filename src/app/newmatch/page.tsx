@@ -27,6 +27,7 @@ export default function Page() {
     player2: number;
   } | null>(null);
   const [matchCompleted, setMatchCompleted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [eloChanges, setEloChanges] = useState<{
     player1Change: number;
     player2Change: number;
@@ -68,36 +69,29 @@ export default function Page() {
         player2: player2WinProbability,
       });
 
-      // Calculate head-to-head record when player2 is selected
-      const h2h = calculateHeadToHead(player1.id, player2.id);
+      // Calculate head-to-head record
+      const calculateH2H = (p1Id: string, p2Id: string) => {
+        let p1Wins = 0;
+        let p2Wins = 0;
+        matches.forEach((match) => {
+          if (
+            (match.player1.id === p1Id && match.player2.id === p2Id) ||
+            (match.player1.id === p2Id && match.player2.id === p1Id)
+          ) {
+            if (match.winner.id === p1Id) p1Wins++;
+            else if (match.winner.id === p2Id) p2Wins++;
+          }
+        });
+        return { player1Wins: p1Wins, player2Wins: p2Wins };
+      };
+
+      const h2h = calculateH2H(player1.id, player2.id);
       setHeadToHead(h2h);
     } else {
       setProbabilities(null);
       setHeadToHead(null);
     }
   }, [player1, player2, kFactor, matches]);
-
-  // Calculate head-to-head record from existing matches only
-  const calculateHeadToHead = (p1Id: string, p2Id: string) => {
-    let p1Wins = 0;
-    let p2Wins = 0;
-
-    // Count existing matches
-    matches.forEach((match) => {
-      if (
-        (match.player1.id === p1Id && match.player2.id === p2Id) ||
-        (match.player1.id === p2Id && match.player2.id === p1Id)
-      ) {
-        if (match.winner.id === p1Id) {
-          p1Wins++;
-        } else if (match.winner.id === p2Id) {
-          p2Wins++;
-        }
-      }
-    });
-
-    return { player1Wins: p1Wins, player2Wins: p2Wins };
-  };
 
   const handleDropdownClick = (callback: () => void) => {
     const elem = document.activeElement as HTMLElement;
@@ -122,32 +116,34 @@ export default function Page() {
   }
 
   const handleConfirmMatch = async () => {
-    // 1. Validate selection
-    if (!player1 || !player2 || !winner) {
+    // 1. Validate selection and prevent double submission
+    if (!player1 || !player2 || !winner || isSubmitting) {
       return;
     }
 
-    // 2. Verify winner is one of them
-    if (winner.id !== player1.id && winner.id !== player2.id) {
-      return;
-    }
-
-    // Determine who is player1 and player2 in terms of the Elo calculation
-    const matchWinner = winner.id === player1.id ? "player1" : "player2";
-
-    // 3. Calculate new Elo ratings
-    const { newPlayer1Elo, newPlayer2Elo, player1Change, player2Change } =
-      calculateElo(player1.eloScore, player2.eloScore, matchWinner, kFactor);
-
-    setEloChanges({
-      player1Change,
-      player2Change,
-      newPlayer1Elo,
-      newPlayer2Elo,
-    });
-
-    // 4. Update the database
+    setIsSubmitting(true);
     try {
+      // 2. Verify winner is one of them
+      if (winner.id !== player1.id && winner.id !== player2.id) {
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Determine who is player1 and player2 in terms of the Elo calculation
+      const matchWinner = winner.id === player1.id ? "player1" : "player2";
+
+      // 3. Calculate new Elo ratings
+      const { newPlayer1Elo, newPlayer2Elo, player1Change, player2Change } =
+        calculateElo(player1.eloScore, player2.eloScore, matchWinner, kFactor);
+
+      setEloChanges({
+        player1Change,
+        player2Change,
+        newPlayer1Elo,
+        newPlayer2Elo,
+      });
+
+      // 4. Update the database
       const response = await fetch("/api/matches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -187,6 +183,8 @@ export default function Page() {
       console.error(err);
       setMatchCompleted(false);
       setEloChanges(null);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -371,7 +369,7 @@ export default function Page() {
                     ? "btn-primary"
                     : "btn-secondary"
                   : "btn-outline"
-              }`}
+              } ${isSubmitting ? 'btn-disabled' : ''}`}
             >
               {winner ? winner.name : "Select"}
             </div>
@@ -382,7 +380,7 @@ export default function Page() {
               <li>
                 <a
                   onClick={() => 
-                    handleDropdownClick(() => {
+                    !isSubmitting && handleDropdownClick(() => {
                       if (player1) setWinner(player1);
                     })
                   }
@@ -393,7 +391,7 @@ export default function Page() {
               <li>
                 <a
                   onClick={() => 
-                    handleDropdownClick(() => {
+                    !isSubmitting && handleDropdownClick(() => {
                       if (player2) setWinner(player2);
                     })
                   }
@@ -403,16 +401,24 @@ export default function Page() {
               </li>
             </ul>
           </div>
-          <button
-            className={`btn btn-lg btn-wide mt-8 text-xl ${
-              player1 && player2 && winner
-                ? "btn-accent"
-                : "btn-disabled"
-            }`}
-            onClick={handleConfirmMatch}
-          >
-            Confirm Match
-          </button>
+          {isSubmitting ? (
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <span className="loading loading-spinner loading-lg"></span>
+              <p className="text-lg font-medium">Saving match results...</p>
+            </div>
+          ) : (
+            <button
+              className={`btn btn-lg btn-wide mt-8 text-xl ${
+                player1 && player2 && winner
+                  ? "btn-accent"
+                  : "btn-disabled"
+              }`}
+              onClick={handleConfirmMatch}
+              disabled={!player1 || !player2 || !winner || isSubmitting}
+            >
+              Confirm Match
+            </button>
+          )}
         </div>
       )}
 
