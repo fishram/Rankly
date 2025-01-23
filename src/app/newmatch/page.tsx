@@ -191,12 +191,12 @@ export default function Page() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-4 px-4 mt-10 flex flex-col space-y-8">
+    <div className="max-w-2xl mx-auto py-4 px-4 mt-8 flex flex-col space-y-6">
       {/* Heading and Back Link */}
       <PageHeading pageTitle="New Match"></PageHeading>
 
       {/* Player Selection Row */}
-      <div className="w-full flex flex-row justify-center space-x-4 pt-5">
+      <div className="w-full flex flex-row justify-center space-x-4 pt-3">
         {/* Player 1 Display (not selectable) */}
         <div className="w-40">
           <div className="btn w-40 text-lg truncate btn-primary">
@@ -404,7 +404,7 @@ export default function Page() {
             </ul>
           </div>
           <button
-            className={`btn btn-lg btn-wide mt-10 text-xl ${
+            className={`btn btn-lg btn-wide mt-8 text-xl ${
               player1 && player2 && winner
                 ? "btn-accent"
                 : "btn-disabled"

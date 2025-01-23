@@ -26,7 +26,7 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
   const getCardStyle = () => {
     switch (rank) {
       case 1:
-        return "card shadow-xl bg-accent text-accent-content w-11/12 mx-auto relative shadow-[0_0_15px_5px_rgba(74,222,128,0.5)]";
+        return "card shadow-xl bg-accent text-accent-content w-11/12 mx-auto relative shadow-[0_0_15px_5px_rgba(74,222,128,0.4)]";
       case 2:
         return "card shadow-xl bg-secondary text-secondary-content w-11/12 mx-auto";
       case 3:
