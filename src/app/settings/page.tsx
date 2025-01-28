@@ -59,8 +59,9 @@ export default function Page() {
       // Refresh player context
       refreshPlayers();
 
-      // Force a hard navigation to the settings page to get a fresh session
-      window.location.href = window.location.href;
+      // Use Next.js router for navigation
+      router.refresh();
+      router.push("/settings");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
