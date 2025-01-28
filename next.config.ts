@@ -11,7 +11,6 @@ const config = {
       handler: "NetworkOnly" as const,
       options: {
         cacheName: "auth-cache",
-        networkTimeoutSeconds: 10,
       },
     },
     {
