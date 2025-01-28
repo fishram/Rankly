@@ -13,7 +13,7 @@ declare module "next-auth" {
       image?: string | null;
       isAdmin: boolean;
       username?: string | null;
-    }
+    };
   }
 }
 
@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -48,15 +48,18 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email
-          }
+            email: credentials.email,
+          },
         });
 
         if (!user || !user.password) {
           return null;
         }
 
-        const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
 
         if (!passwordMatch) {
           return null;
@@ -68,11 +71,16 @@ export const authOptions: NextAuthOptions = {
           username: user.username,
           isAdmin: user.isAdmin,
         };
-      }
-    })
+      },
+    }),
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 0, // Force update on every request
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/auth/signin",
@@ -83,6 +91,19 @@ export const authOptions: NextAuthOptions = {
         token.id = (user as UserWithIsAdmin).id;
         token.isAdmin = (user as UserWithIsAdmin).isAdmin;
         token.username = (user as UserWithIsAdmin).username;
+      } else {
+        // Refresh user data on every token refresh
+        const refreshedUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: {
+            username: true,
+            isAdmin: true,
+          },
+        });
+        if (refreshedUser) {
+          token.username = refreshedUser.username;
+          token.isAdmin = refreshedUser.isAdmin;
+        }
       }
       return token;
     },
@@ -93,16 +114,16 @@ export const authOptions: NextAuthOptions = {
         session.user.username = token.username;
       }
       return session;
-    }
+    },
   },
   events: {
     async createUser({ user }) {
       await prisma.player.create({
         data: {
-          name: user.name || user.email?.split('@')[0] || 'New Player',
+          name: user.name || user.email?.split("@")[0] || "New Player",
           userId: user.id,
-        }
+        },
       });
-    }
-  }
-}; 
+    },
+  },
+};

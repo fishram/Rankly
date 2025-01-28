@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { useRouter } from "next/navigation";
 import PageHeading from "../components/page_heading";
+import { usePlayer } from "@/contexts/PlayerContext";
 
 export default function Page() {
   const { data: session, update: updateSession, status } = useSession();
@@ -12,13 +13,14 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { refreshPlayers } = usePlayer();
 
-  // Update name when session loads
+  // Keep the display name in sync with the session
   useEffect(() => {
-    if (session?.user?.username) {
+    if (session?.user?.username && !isLoading) {
       setNewName(session.user.username);
     }
-  }, [session?.user?.username]);
+  }, [session?.user?.username, isLoading]);
 
   const handleUpdateName = async () => {
     if (!session?.user?.email) return;
@@ -43,6 +45,7 @@ export default function Page() {
 
       // Get the updated user data
       const updatedUser = await response.json();
+      console.log("Received updated user:", updatedUser);
 
       // Update the session with new data
       await updateSession({
@@ -53,8 +56,11 @@ export default function Page() {
         },
       });
 
-      // Force a router refresh to update any cached data
-      router.refresh();
+      // Refresh player context
+      refreshPlayers();
+
+      // Force a hard navigation to the settings page to get a fresh session
+      window.location.href = window.location.href;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

@@ -7,8 +7,8 @@ export async function PUT(request: Request) {
   try {
     await prisma.$connect();
     const session = await getServerSession(authOptions);
-    console.log("Current session:", session);
-    
+    console.log("Current session in API:", session);
+
     if (!session?.user?.email) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -26,15 +26,22 @@ export async function PUT(request: Request) {
       where: {
         username: name,
         NOT: {
-          email: session.user.email
-        }
-      }
+          email: session.user.email,
+        },
+      },
     });
     console.log("Existing user check result:", existingUser);
 
     if (existingUser) {
       return new NextResponse("Username already taken", { status: 400 });
     }
+
+    // First, verify current state
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { players: true },
+    });
+    console.log("Current user state:", currentUser);
 
     // Update the user's name and their associated players
     console.log("Attempting to update user with email:", session.user.email);
@@ -47,25 +54,35 @@ export async function PUT(request: Request) {
         players: {
           updateMany: {
             where: {
-              userId: session.user.id
+              userId: session.user.id,
             },
             data: {
-              name: name
-            }
-          }
-        }
+              name: name,
+            },
+          },
+        },
       },
       include: {
-        players: true
-      }
+        players: true,
+      },
     });
     console.log("Update result:", updatedUser);
+
+    // Verify the update
+    const verifyUpdate = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { players: true },
+    });
+    console.log("Verification after update:", verifyUpdate);
 
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.error("Error updating user settings:", error);
-    return new NextResponse(error instanceof Error ? error.message : "Internal Server Error", { status: 500 });
+    return new NextResponse(
+      error instanceof Error ? error.message : "Internal Server Error",
+      { status: 500 }
+    );
   } finally {
     await prisma.$disconnect();
   }
-} 
+}

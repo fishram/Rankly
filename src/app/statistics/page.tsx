@@ -24,10 +24,8 @@ export default function Page() {
   };
 
   useEffect(() => {
-    if (players && session?.user?.username) {
-      const currentPlayer = players.find(
-        (p) => p.name === session.user.username
-      );
+    if (players && session?.user?.id) {
+      const currentPlayer = players.find((p) => p.userId === session.user.id);
       if (currentPlayer) {
         setSelectedPlayer(currentPlayer.id);
       }
@@ -129,7 +127,11 @@ export default function Page() {
           >
             {players.map((player) => (
               <li key={player.id}>
-                <a onClick={() => handleDropdownClick(() => setSelectedPlayer(player.id))}>
+                <a
+                  onClick={() =>
+                    handleDropdownClick(() => setSelectedPlayer(player.id))
+                  }
+                >
                   {player.name}
                 </a>
               </li>
