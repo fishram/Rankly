@@ -34,8 +34,6 @@ model Match {
   winnerId          Int?
   date              DateTime @default(now())
   notes             String?
-  previousPlayer1Elo Int     @default(1000)  // Store previous Elo for undo
-  previousPlayer2Elo Int     @default(1000)  // Store previous Elo for undo
 
   player1 Player  @relation("MatchPlayer1", fields: [player1Id], references: [id])
   player2 Player  @relation("MatchPlayer2", fields: [player2Id], references: [id])
