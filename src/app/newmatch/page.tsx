@@ -14,7 +14,8 @@ import PageHeading from "../components/page_heading";
 export default function Page() {
   const { players, loading, error, setPlayers } = useFetchPlayers();
   const [matchesRefreshKey, setMatchesRefreshKey] = useState(0);
-  const { matches, loading: matchesLoading } = useFetchMatches(matchesRefreshKey);
+  const { matches, loading: matchesLoading } =
+    useFetchMatches(matchesRefreshKey);
   const { kFactor } = useKFactor();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -28,6 +29,12 @@ export default function Page() {
   } | null>(null);
   const [matchCompleted, setMatchCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastMatchId, setLastMatchId] = useState<string | null>(null);
+  const [previousElos, setPreviousElos] = useState<{
+    player1Elo: number;
+    player2Elo: number;
+  } | null>(null);
+  const [isUndoing, setIsUndoing] = useState(false);
   const [eloChanges, setEloChanges] = useState<{
     player1Change: number;
     player2Change: number;
@@ -121,6 +128,12 @@ export default function Page() {
       return;
     }
 
+    // Store the previous Elo scores before updating
+    setPreviousElos({
+      player1Elo: player1.eloScore,
+      player2Elo: player2.eloScore,
+    });
+
     setIsSubmitting(true);
     try {
       // 2. Verify winner is one of them
@@ -161,6 +174,9 @@ export default function Page() {
         throw new Error("Failed to save match data to the database.");
       }
 
+      const matchData = await response.json();
+      setLastMatchId(matchData.id);
+
       // Update the players list with new Elo scores
       setPlayers(
         players.map((p) => {
@@ -175,16 +191,58 @@ export default function Page() {
       );
 
       // Trigger a refetch of matches
-      setMatchesRefreshKey(prev => prev + 1);
-      
-      setMatchCompleted(true);
+      setMatchesRefreshKey((prev) => prev + 1);
 
+      setMatchCompleted(true);
     } catch (err: unknown) {
       console.error(err);
       setMatchCompleted(false);
       setEloChanges(null);
+      setLastMatchId(null);
+      setPreviousElos(null);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!lastMatchId || !previousElos || isUndoing) return;
+
+    setIsUndoing(true);
+    try {
+      const response = await fetch(
+        `/api/matches?id=${lastMatchId}&player1Elo=${previousElos.player1Elo}&player2Elo=${previousElos.player2Elo}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to undo match");
+      }
+
+      // Reset all states
+      setMatchCompleted(false);
+      setEloChanges(null);
+      setLastMatchId(null);
+      setPreviousElos(null);
+      setPlayer2(null);
+      setWinner(null);
+      setProbabilities(null);
+      setHeadToHead(null);
+
+      // Refresh players and matches data
+      const playersResponse = await fetch("/api/players");
+      if (playersResponse.ok) {
+        const updatedPlayers = await playersResponse.json();
+        setPlayers(updatedPlayers);
+      }
+      setMatchesRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error undoing match:", error);
+      // You might want to show an error toast/notification here
+    } finally {
+      setIsUndoing(false);
     }
   };
 
@@ -221,9 +279,7 @@ export default function Page() {
               .filter((p) => p.id !== player1?.id)
               .map((p) => (
                 <li key={p.id}>
-                  <a
-                    onClick={() => handleDropdownClick(() => setPlayer2(p))}
-                  >
+                  <a onClick={() => handleDropdownClick(() => setPlayer2(p))}>
                     {p.name}
                   </a>
                 </li>
@@ -240,7 +296,9 @@ export default function Page() {
             {player1 && (
               <>
                 <div
-                  className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
+                  className={`text-3xl font-semibold ${
+                    matchCompleted ? "animate-score" : ""
+                  }`}
                 >
                   {matchCompleted
                     ? `${eloChanges?.newPlayer1Elo} SR`
@@ -290,7 +348,9 @@ export default function Page() {
             {player2 && (
               <>
                 <div
-                  className={`text-3xl font-semibold ${matchCompleted ? "animate-score" : ""}`}
+                  className={`text-3xl font-semibold ${
+                    matchCompleted ? "animate-score" : ""
+                  }`}
                 >
                   {matchCompleted
                     ? `${eloChanges?.newPlayer2Elo} SR`
@@ -345,9 +405,14 @@ export default function Page() {
               <div className="text-2xl font-semibold mb-2">Head to Head</div>
               <div className="flex items-center gap-4">
                 <span className="text-xl">
-                  <span className="text-primary text-4xl font-bold"> {headToHead.player1Wins}</span>
+                  <span className="text-primary text-4xl font-bold">
+                    {" "}
+                    {headToHead.player1Wins}
+                  </span>
                   <span className="text-4xl font-bold"> - </span>
-                  <span className="text-secondary text-4xl font-bold">{headToHead.player2Wins}</span>
+                  <span className="text-secondary text-4xl font-bold">
+                    {headToHead.player2Wins}
+                  </span>
                 </span>
               </div>
             </>
@@ -369,7 +434,7 @@ export default function Page() {
                     ? "btn-primary"
                     : "btn-secondary"
                   : "btn-outline"
-              } ${isSubmitting ? 'btn-disabled' : ''}`}
+              } ${isSubmitting ? "btn-disabled" : ""}`}
             >
               {winner ? winner.name : "Select"}
             </div>
@@ -379,8 +444,9 @@ export default function Page() {
             >
               <li>
                 <a
-                  onClick={() => 
-                    !isSubmitting && handleDropdownClick(() => {
+                  onClick={() =>
+                    !isSubmitting &&
+                    handleDropdownClick(() => {
                       if (player1) setWinner(player1);
                     })
                   }
@@ -390,8 +456,9 @@ export default function Page() {
               </li>
               <li>
                 <a
-                  onClick={() => 
-                    !isSubmitting && handleDropdownClick(() => {
+                  onClick={() =>
+                    !isSubmitting &&
+                    handleDropdownClick(() => {
                       if (player2) setWinner(player2);
                     })
                   }
@@ -409,9 +476,7 @@ export default function Page() {
           ) : (
             <button
               className={`btn btn-lg btn-wide mt-8 text-xl ${
-                player1 && player2 && winner
-                  ? "btn-accent"
-                  : "btn-disabled"
+                player1 && player2 && winner ? "btn-accent" : "btn-disabled"
               }`}
               onClick={handleConfirmMatch}
               disabled={!player1 || !player2 || !winner || isSubmitting}
@@ -422,31 +487,44 @@ export default function Page() {
         </div>
       )}
 
-      {/* New Match Button - Only show if match completed */}
+      {/* Match Completed Actions */}
       {matchCompleted && (
-        <button
-          className="btn btn-accent btn-lg animate-elo-change mx-14"
-          onClick={() => {
-            setMatchCompleted(false);
-            setEloChanges(null);
-            setPlayer2(null);
-            setWinner(null);
-            setProbabilities(null);
-            setHeadToHead(null);
+        <div className="flex flex-col items-center gap-4">
+          <button
+            className="btn btn-accent btn-lg animate-elo-change mx-14"
+            onClick={() => {
+              setMatchCompleted(false);
+              setEloChanges(null);
+              setLastMatchId(null);
+              setPlayer2(null);
+              setWinner(null);
+              setProbabilities(null);
+              setHeadToHead(null);
 
-            // Re-populate player1 with the current user's player
-            if (session?.user?.id) {
-              const userPlayer = players.find(
-                (p) => p.userId === session.user.id
-              );
-              if (userPlayer) {
-                setPlayer1(userPlayer);
+              // Re-populate player1 with the current user's player
+              if (session?.user?.id) {
+                const userPlayer = players.find(
+                  (p) => p.userId === session.user.id
+                );
+                if (userPlayer) {
+                  setPlayer1(userPlayer);
+                }
               }
-            }
-          }}
-        >
-          New Match
-        </button>
+            }}
+          >
+            New Match
+          </button>
+
+          <button
+            className={`btn btn-outline btn-error ${
+              isUndoing ? "loading" : ""
+            }`}
+            onClick={handleUndo}
+            disabled={isUndoing || !lastMatchId}
+          >
+            {isUndoing ? "Undoing..." : "Undo Match"}
+          </button>
+        </div>
       )}
     </div>
   );
