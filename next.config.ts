@@ -8,7 +8,7 @@ const config = {
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/.*\/api\/auth\/.*/,
-      handler: "NetworkFirst",
+      handler: "NetworkOnly" as const,
       options: {
         cacheName: "auth-cache",
         networkTimeoutSeconds: 10,
@@ -16,13 +16,13 @@ const config = {
     },
     {
       urlPattern: /.*/, // Default handler for all other routes
-      handler: "NetworkFirst",
+      handler: "NetworkFirst" as const,
       options: {
         cacheName: "default-cache",
         networkTimeoutSeconds: 10,
       },
     },
-  ] as const,
+  ],
 };
 
 export default withPWA(config)({});
