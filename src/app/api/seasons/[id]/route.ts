@@ -6,11 +6,12 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 // GET: Fetch a specific season with detailed stats
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await prisma.$connect();
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
 
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid season ID" }, { status: 400 });
@@ -55,7 +56,7 @@ export async function GET(
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error fetching season ${params.id}:`, errorMessage);
+    console.error(`Error fetching season ${(await params).id}:`, errorMessage);
 
     return NextResponse.json(
       { error: "Failed to fetch season" },
@@ -67,7 +68,7 @@ export async function GET(
 // DELETE: Delete a season and all its related data
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await prisma.$connect();
@@ -78,7 +79,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
 
     if (isNaN(id)) {
       return NextResponse.json({ error: "Invalid season ID" }, { status: 400 });
@@ -125,7 +127,7 @@ export async function DELETE(
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error deleting season ${params.id}:`, errorMessage);
+    console.error(`Error deleting season ${(await params).id}:`, errorMessage);
 
     return NextResponse.json(
       { error: "Failed to delete season" },
