@@ -1,0 +1,72 @@
+[
+  {
+    "id": 5,
+    "name": "DEI Hayden",
+    "eloScore": 1102,
+    "highestElo": 1162,
+    "wins": 11,
+    "losses": 7,
+    "isActive": true,
+    "userId": "cm5t6xp9y0000mb0fmgqak4fm"
+  },
+  {
+    "id": 7,
+    "name": "Cam Fowler",
+    "eloScore": 841,
+    "highestElo": 1000,
+    "wins": 0,
+    "losses": 12,
+    "isActive": true,
+    "userId": "cm683mndz0000ii0fgmd1e9in"
+  },
+  {
+    "id": 1,
+    "name": "Fishram",
+    "eloScore": 1115,
+    "highestElo": 1200,
+    "wins": 71,
+    "losses": 60,
+    "isActive": true,
+    "userId": "cm5luwi090000mk0g9rgl2y8d"
+  },
+  {
+    "id": 2,
+    "name": "brycewinner",
+    "eloScore": 844,
+    "highestElo": 1157,
+    "wins": 32,
+    "losses": 42,
+    "isActive": true,
+    "userId": "cm5luxtsh0001mk0gisih5ac6"
+  },
+  {
+    "id": 3,
+    "name": "Jacobreeves",
+    "eloScore": 699,
+    "highestElo": 1000,
+    "wins": 5,
+    "losses": 52,
+    "isActive": true,
+    "userId": "cm5q46rbb0000kx0fttyskavv"
+  },
+  {
+    "id": 4,
+    "name": "Neighb",
+    "eloScore": 1261,
+    "highestElo": 1274,
+    "wins": 92,
+    "losses": 39,
+    "isActive": true,
+    "userId": "cm5q48kef0000l40gq0wfu52v"
+  },
+  {
+    "id": 6,
+    "name": "Cooperjones",
+    "eloScore": 1139,
+    "highestElo": 1198,
+    "wins": 17,
+    "losses": 16,
+    "isActive": true,
+    "userId": "cm61k5ti30000k20geadnri7r"
+  }
+]

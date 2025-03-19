@@ -25,6 +25,9 @@ model Player {
   matchesAsPlayer2 Match[] @relation("MatchPlayer2")
   // Matches where this player is winner
   matchesWon       Match[] @relation("MatchWinner")
+
+  // Season stats
+  seasonStats      PlayerSeasonStats[]
 }
 
 model Match {
@@ -34,42 +37,21 @@ model Match {
   winnerId          Int?
   date              DateTime @default(now())
   notes             String?
-
+  seasonId          Int
+  
+  // ELO change records for this match
+  player1EloChange  Int?     // How much ELO player1 gained/lost
+  player2EloChange  Int?     // How much ELO player2 gained/lost
+  
   player1 Player  @relation("MatchPlayer1", fields: [player1Id], references: [id])
   player2 Player  @relation("MatchPlayer2", fields: [player2Id], references: [id])
   winner  Player? @relation("MatchWinner", fields: [winnerId], references: [id])
+  season  Season   @relation(fields: [seasonId], references: [id])
 }
 
 model Settings {
   id      String  @id @default(cuid())
   kFactor Int     @default(50)
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -80,15 +62,35 @@ model User {
   password      String?
   image         String?
   isAdmin       Boolean   @default(false)
-  accounts      Account[]
-  sessions      Session[]
   players       Player[]
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+model Season {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique  // e.g., "Spring 2023", "Season 1", etc.
+  startDate        DateTime
+  endDate          DateTime?          // null if the season is ongoing
+  isActive         Boolean            @default(true) // only one season should be active at a time
+  createdAt        DateTime           @default(now())
+  
+  // Relationships
+  matches          Match[]
+  playerStats      PlayerSeasonStats[]
+}
 
-  @@unique([identifier, token])
+model PlayerSeasonStats {
+  id               Int      @id @default(autoincrement())
+  playerId         Int
+  seasonId         Int
+  initialElo       Int      @default(1000) // Starting ELO for the season
+  finalElo         Int?     // Final ELO at end of season (null if season ongoing)
+  highestElo       Int      @default(1000)
+  wins             Int      @default(0)
+  losses           Int      @default(0)
+  
+  // Relationships
+  player           Player   @relation(fields: [playerId], references: [id])
+  season           Season   @relation(fields: [seasonId], references: [id])
+  
+  @@unique([playerId, seasonId]) // A player can only have one stats record per season
 }

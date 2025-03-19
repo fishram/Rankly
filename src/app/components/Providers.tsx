@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
-import { SessionProvider } from 'next-auth/react';
-import { PlayerProvider } from '@/contexts/PlayerContext';
+import { SessionProvider } from "next-auth/react";
+import { PlayerProvider } from "@/contexts/PlayerContext";
+import { SeasonProvider } from "@/contexts/SeasonContext";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <PlayerProvider>
-        {children}
+        <SeasonProvider>{children}</SeasonProvider>
       </PlayerProvider>
     </SessionProvider>
   );
-} 
+}

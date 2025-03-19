@@ -1,0 +1,1 @@
+-- This is a baseline migration for an existing database

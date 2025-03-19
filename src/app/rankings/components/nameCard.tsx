@@ -6,8 +6,9 @@ interface NameCardProps {
     eloScore: number;
     wins: number;
     highestElo: number;
+    finalElo?: number;
   };
-  sortBy: "rank" | "matches" | "peak";
+  sortBy: "rank" | "matches" | "peak" | "endSeason";
 }
 
 export default function NameCard({ rank, player, sortBy }: NameCardProps) {
@@ -17,6 +18,8 @@ export default function NameCard({ rank, player, sortBy }: NameCardProps) {
         return `${player.wins} wins`;
       case "peak":
         return `${player.highestElo} SR`;
+      case "endSeason":
+        return `${player.finalElo || player.eloScore} SR`;
       case "rank":
       default:
         return `${player.eloScore} SR`;

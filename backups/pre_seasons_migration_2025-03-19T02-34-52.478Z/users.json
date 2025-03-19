@@ -1,0 +1,65 @@
+[
+  {
+    "id": "cm5luxtsh0001mk0gisih5ac6",
+    "username": "brycewinner",
+    "email": "bryceski@unc.edu",
+    "emailVerified": null,
+    "password": "$2a$10$Q4zILt7fcpfMbcdsau4I5e/OpL6arJYMrVCo8N8IaknQLjdKxX8HG",
+    "image": null,
+    "isAdmin": false
+  },
+  {
+    "id": "cm5q46rbb0000kx0fttyskavv",
+    "username": "Jacobreeves",
+    "email": "jacobmyles618@gmail.com",
+    "emailVerified": null,
+    "password": "$2a$10$zj/B.kLK8bUJGvRwxQFGuO89dV6h.mhPkUt/u0vCmzx2kd7jvTBuW",
+    "image": null,
+    "isAdmin": false
+  },
+  {
+    "id": "cm61k5ti30000k20geadnri7r",
+    "username": "Cooperjones",
+    "email": "cooperjones624@gmail.com",
+    "emailVerified": null,
+    "password": "$2a$10$T24mo6oh1rEfz42tUulRouWrdzhhhFr.j3IKJSIQg8DaHi6uS/39m",
+    "image": null,
+    "isAdmin": false
+  },
+  {
+    "id": "cm683mndz0000ii0fgmd1e9in",
+    "username": "Cam Fowler",
+    "email": "wcfowler5@gmail.com",
+    "emailVerified": null,
+    "password": "$2a$10$y/J6PGVPNVhLAgRturGiWuvfiznH06SG2NtRt7kkh36RJl3NweDaO",
+    "image": null,
+    "isAdmin": false
+  },
+  {
+    "id": "cm5luwi090000mk0g9rgl2y8d",
+    "username": "Fishram",
+    "email": "fisherramseyy@gmail.com",
+    "emailVerified": null,
+    "password": "$2a$10$c0k/qTvjodRZAH27haOd2OTmlykFSfkNP6W3550coaVfMKUC2Ju.2",
+    "image": null,
+    "isAdmin": true
+  },
+  {
+    "id": "cm5q48kef0000l40gq0wfu52v",
+    "username": "Neighb",
+    "email": "aaron.neighbors@ymail.com",
+    "emailVerified": null,
+    "password": "$2a$10$uc5iX7QFJWXHG7GIgbhpx.mnaMzSUnyfh5R4lB//4WYF2JVOJnJZq",
+    "image": null,
+    "isAdmin": false
+  },
+  {
+    "id": "cm5t6xp9y0000mb0fmgqak4fm",
+    "username": "DEI Hayden",
+    "email": "hayden445566@gmail.com",
+    "emailVerified": null,
+    "password": "$2a$10$LPtWqi4UrVcbb6AkVp9tWeaQUyoODwYQyEazRtfxKX1jYswx9xyLO",
+    "image": null,
+    "isAdmin": false
+  }
+]

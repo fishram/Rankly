@@ -1,4 +1,5 @@
 import { Player } from "./player";
+import { Season } from "../hooks/useFetchSeasons";
 
 export interface Match {
   id: string;
@@ -7,4 +8,6 @@ export interface Match {
   winner: Player;
   date: Date;
   notes?: string;
+  season?: Season;
+  seasonId?: number;
 }

@@ -10,12 +10,20 @@ import { useKFactor } from "../hooks/useKFactor";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PageHeading from "../components/page_heading";
+import { useSeason } from "@/contexts/SeasonContext";
 
 export default function Page() {
   const { players, loading, error, setPlayers } = useFetchPlayers();
   const [matchesRefreshKey, setMatchesRefreshKey] = useState(0);
-  const { matches, loading: matchesLoading } =
-    useFetchMatches(matchesRefreshKey);
+  const { currentSeason } = useSeason();
+
+  // Only get matches from the current season for head-to-head stats
+  const seasonIdForFetch = currentSeason?.id;
+
+  const { matches, loading: matchesLoading } = useFetchMatches(
+    seasonIdForFetch,
+    matchesRefreshKey
+  );
   const { kFactor } = useKFactor();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -402,7 +410,10 @@ export default function Page() {
         <div className="h-24 flex flex-col items-center justify-center">
           {player1 && player2 && headToHead && (
             <>
-              <div className="text-2xl font-semibold mb-2">Head to Head</div>
+              <div className="text-3xl font-semibold mt-8">Head to Head</div>
+              <div className="text-xs text-gray-400 mb-2 mt-0.5">
+                {currentSeason ? `${currentSeason.name}` : "All seasons"}
+              </div>
               <div className="flex items-center gap-4">
                 <span className="text-xl">
                   <span className="text-primary text-4xl font-bold">
@@ -423,7 +434,7 @@ export default function Page() {
       {/* Winner Section - Only show if match not completed */}
       {!matchCompleted && (
         <div className="flex flex-col items-center gap-6">
-          <h1 className="text-4xl font-bold">Winner</h1>
+          <h1 className="text-4xl font-bold mt-4">Winner</h1>
           <div className="dropdown dropdown-hover">
             <div
               tabIndex={0}
@@ -491,7 +502,7 @@ export default function Page() {
       {matchCompleted && (
         <div className="flex flex-col items-center gap-4">
           <button
-            className="btn btn-accent btn-lg animate-elo-change mx-14"
+            className="btn btn-accent btn-lg animate-elo-change mx-14 px-14 mt-8"
             onClick={() => {
               setMatchCompleted(false);
               setEloChanges(null);

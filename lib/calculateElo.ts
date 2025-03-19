@@ -15,8 +15,12 @@ export default function calculateElo(
   const score2 = winner === "player2" ? 1 : 0;
 
   // New Elo ratings
-  const newPlayer1Elo = Math.round(player1Elo + kFactor * (score1 - expectedScore1));
-  const newPlayer2Elo = Math.round(player2Elo + kFactor * (score2 - expectedScore2));
+  const newPlayer1Elo = Math.round(
+    player1Elo + kFactor * (score1 - expectedScore1)
+  );
+  const newPlayer2Elo = Math.round(
+    player2Elo + kFactor * (score2 - expectedScore2)
+  );
 
   // Return the new Elos and percentage changes
   const player1Change = newPlayer1Elo - player1Elo;

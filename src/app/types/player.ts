@@ -7,4 +7,6 @@ export interface Player {
   losses: number;
   userId?: string;
   isActive: boolean;
+  finalElo?: number;
+  initialElo?: number;
 }
