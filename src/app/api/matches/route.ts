@@ -67,129 +67,186 @@ export async function POST(req: Request) {
     const player1EloChange = newPlayer1Elo - currentPlayer1.eloScore;
     const player2EloChange = newPlayer2Elo - currentPlayer2.eloScore;
 
-    // Create the match
-    const match = await prisma.$transaction(async (tx) => {
-      // Update player1
-      await tx.player.update({
-        where: { id: player1Id },
-        data: {
-          eloScore: newPlayer1Elo,
-          highestElo: Math.max(newPlayer1Elo, currentPlayer1.highestElo),
-          wins: winnerId === player1Id ? { increment: 1 } : currentPlayer1.wins,
-          losses:
-            winnerId !== player1Id ? { increment: 1 } : currentPlayer1.losses,
-        },
-      });
+    // Create the match with a retry mechanism
+    let match;
+    let retries = 0;
+    const MAX_RETRIES = 3;
 
-      // Update player2
-      await tx.player.update({
-        where: { id: player2Id },
-        data: {
-          eloScore: newPlayer2Elo,
-          highestElo: Math.max(newPlayer2Elo, currentPlayer2.highestElo),
-          wins: winnerId === player2Id ? { increment: 1 } : currentPlayer2.wins,
-          losses:
-            winnerId !== player2Id ? { increment: 1 } : currentPlayer2.losses,
-        },
-      });
+    while (retries < MAX_RETRIES) {
+      try {
+        match = await prisma.$transaction(async (tx) => {
+          // Update player1
+          await tx.player.update({
+            where: { id: player1Id },
+            data: {
+              eloScore: newPlayer1Elo,
+              highestElo: Math.max(newPlayer1Elo, currentPlayer1.highestElo),
+              wins:
+                winnerId === player1Id ? { increment: 1 } : currentPlayer1.wins,
+              losses:
+                winnerId !== player1Id
+                  ? { increment: 1 }
+                  : currentPlayer1.losses,
+            },
+          });
 
-      // Update player1's season stats
-      const player1SeasonStats = await tx.playerSeasonStats.findFirst({
-        where: {
-          playerId: player1Id,
-          seasonId: activeSeason.id,
-        },
-      });
+          // Update player2
+          await tx.player.update({
+            where: { id: player2Id },
+            data: {
+              eloScore: newPlayer2Elo,
+              highestElo: Math.max(newPlayer2Elo, currentPlayer2.highestElo),
+              wins:
+                winnerId === player2Id ? { increment: 1 } : currentPlayer2.wins,
+              losses:
+                winnerId !== player2Id
+                  ? { increment: 1 }
+                  : currentPlayer2.losses,
+            },
+          });
 
-      if (player1SeasonStats) {
-        await tx.playerSeasonStats.update({
-          where: { id: player1SeasonStats.id },
-          data: {
-            highestElo: Math.max(newPlayer1Elo, player1SeasonStats.highestElo),
-            wins:
-              winnerId === player1Id
-                ? { increment: 1 }
-                : player1SeasonStats.wins,
-            losses:
-              winnerId !== player1Id
-                ? { increment: 1 }
-                : player1SeasonStats.losses,
-          },
+          // Update player1's season stats
+          const player1SeasonStats = await tx.playerSeasonStats.findFirst({
+            where: {
+              playerId: player1Id,
+              seasonId: activeSeason.id,
+            },
+          });
+
+          if (player1SeasonStats) {
+            await tx.playerSeasonStats.update({
+              where: { id: player1SeasonStats.id },
+              data: {
+                highestElo: Math.max(
+                  newPlayer1Elo,
+                  player1SeasonStats.highestElo
+                ),
+                wins:
+                  winnerId === player1Id
+                    ? { increment: 1 }
+                    : player1SeasonStats.wins,
+                losses:
+                  winnerId !== player1Id
+                    ? { increment: 1 }
+                    : player1SeasonStats.losses,
+              },
+            });
+          } else {
+            // Create season stats if they don't exist (new player in this season)
+            await tx.playerSeasonStats.create({
+              data: {
+                playerId: player1Id,
+                seasonId: activeSeason.id,
+                initialElo: currentPlayer1.eloScore,
+                highestElo: newPlayer1Elo,
+                wins: winnerId === player1Id ? 1 : 0,
+                losses: winnerId !== player1Id ? 1 : 0,
+              },
+            });
+          }
+
+          // Update player2's season stats
+          const player2SeasonStats = await tx.playerSeasonStats.findFirst({
+            where: {
+              playerId: player2Id,
+              seasonId: activeSeason.id,
+            },
+          });
+
+          if (player2SeasonStats) {
+            await tx.playerSeasonStats.update({
+              where: { id: player2SeasonStats.id },
+              data: {
+                highestElo: Math.max(
+                  newPlayer2Elo,
+                  player2SeasonStats.highestElo
+                ),
+                wins:
+                  winnerId === player2Id
+                    ? { increment: 1 }
+                    : player2SeasonStats.wins,
+                losses:
+                  winnerId !== player2Id
+                    ? { increment: 1 }
+                    : player2SeasonStats.losses,
+              },
+            });
+          } else {
+            // Create season stats if they don't exist (new player in this season)
+            await tx.playerSeasonStats.create({
+              data: {
+                playerId: player2Id,
+                seasonId: activeSeason.id,
+                initialElo: currentPlayer2.eloScore,
+                highestElo: newPlayer2Elo,
+                wins: winnerId === player2Id ? 1 : 0,
+                losses: winnerId !== player2Id ? 1 : 0,
+              },
+            });
+          }
+
+          // Create the match record with season information
+          return await tx.match.create({
+            data: {
+              player1Id,
+              player2Id,
+              winnerId,
+              date,
+              seasonId: activeSeason.id,
+              player1EloChange,
+              player2EloChange,
+            },
+            include: {
+              player1: true,
+              player2: true,
+              winner: true,
+              season: true,
+            },
+          });
         });
-      } else {
-        // Create season stats if they don't exist (new player in this season)
-        await tx.playerSeasonStats.create({
-          data: {
-            playerId: player1Id,
-            seasonId: activeSeason.id,
-            initialElo: currentPlayer1.eloScore,
-            highestElo: newPlayer1Elo,
-            wins: winnerId === player1Id ? 1 : 0,
-            losses: winnerId !== player1Id ? 1 : 0,
-          },
-        });
+
+        // If we reach here, match was created successfully
+        break;
+      } catch (err) {
+        // If it's a unique constraint error, retry
+        if (
+          err instanceof Error &&
+          err.message.includes("Unique constraint failed on the fields")
+        ) {
+          retries++;
+          // Wait a short time before retrying (exponential backoff)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 100 * Math.pow(2, retries))
+          );
+
+          if (retries >= MAX_RETRIES) {
+            throw new Error(
+              "Failed to create match after multiple attempts: " + err.message
+            );
+          }
+        } else {
+          // For other errors, just throw
+          throw err;
+        }
       }
-
-      // Update player2's season stats
-      const player2SeasonStats = await tx.playerSeasonStats.findFirst({
-        where: {
-          playerId: player2Id,
-          seasonId: activeSeason.id,
-        },
-      });
-
-      if (player2SeasonStats) {
-        await tx.playerSeasonStats.update({
-          where: { id: player2SeasonStats.id },
-          data: {
-            highestElo: Math.max(newPlayer2Elo, player2SeasonStats.highestElo),
-            wins:
-              winnerId === player2Id
-                ? { increment: 1 }
-                : player2SeasonStats.wins,
-            losses:
-              winnerId !== player2Id
-                ? { increment: 1 }
-                : player2SeasonStats.losses,
-          },
-        });
-      } else {
-        // Create season stats if they don't exist (new player in this season)
-        await tx.playerSeasonStats.create({
-          data: {
-            playerId: player2Id,
-            seasonId: activeSeason.id,
-            initialElo: currentPlayer2.eloScore,
-            highestElo: newPlayer2Elo,
-            wins: winnerId === player2Id ? 1 : 0,
-            losses: winnerId !== player2Id ? 1 : 0,
-          },
-        });
-      }
-
-      // Create the match record with season information
-      return await tx.match.create({
-        data: {
-          player1Id,
-          player2Id,
-          winnerId,
-          date,
-          seasonId: activeSeason.id,
-          player1EloChange,
-          player2EloChange,
-        },
-        include: {
-          player1: true,
-          player2: true,
-          winner: true,
-          season: true,
-        },
-      });
-    });
+    }
 
     return NextResponse.json(match);
   } catch (error) {
-    console.error("Error creating match:", error);
+    console.error(
+      "Error creating match:",
+      error instanceof Error ? error.message : String(error)
+    );
+    // Check for Prisma unique constraint error
+    if (
+      error instanceof Error &&
+      error.message.includes("Unique constraint failed on the fields")
+    ) {
+      return NextResponse.json(
+        { error: "A match with this ID already exists" },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to create match" },
       { status: 500 }

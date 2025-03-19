@@ -6,6 +6,7 @@ import ErrorDisplay from "../components/ErrorDisplay";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PageHeading from "../components/page_heading";
+import Link from "next/link";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"players" | "seasons">("players");
@@ -249,6 +250,12 @@ export default function AdminPage() {
     <div className="max-w-4xl mx-auto p-4">
       <div className="pt-12 pb-8">
         <PageHeading pageTitle="Admin Panel"></PageHeading>
+
+        <div className="flex justify-center mt-4">
+          <Link href="/admin/fix-database" className="btn btn-error">
+            Fix Database Issues
+          </Link>
+        </div>
       </div>
 
       {/* Tab Navigation */}
