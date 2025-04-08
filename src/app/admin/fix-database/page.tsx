@@ -69,8 +69,8 @@ export default function FixDatabasePage() {
           <h2 className="card-title">Fix Database Sequences</h2>
           <p>
             This tool will fix ID sequences that may have become out of sync
-            after database migrations. Use this if you're encountering unique
-            constraint errors when creating new records.
+            after database migrations. Use this if you&apos;re encountering
+            unique constraint errors when creating new records.
           </p>
 
           {result && (

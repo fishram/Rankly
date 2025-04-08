@@ -43,7 +43,7 @@ export default function Page() {
     if (!matchesLoading && isChangingSeason) {
       setIsChangingSeason(false);
     }
-  }, [matchesLoading, matches]);
+  }, [matchesLoading, matches, isChangingSeason]);
 
   const handleDropdownClick = (callback: () => void) => {
     const elem = document.activeElement as HTMLElement;
