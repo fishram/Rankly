@@ -77,29 +77,34 @@ export default function Page() {
       })
     : players;
 
-  const sortedPlayers = [...filteredPlayers]
-    .filter((player) => player.isActive && player.wins + player.losses >= 5)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "matches":
-          return b.wins - a.wins;
-        case "peak":
-          return b.highestElo - a.highestElo;
-        case "endSeason":
-          // For season stats, finalElo is the end of season SR
-          // Note: if finalElo is null (ongoing season), use current eloScore
-          return (b.finalElo || b.eloScore) - (a.finalElo || a.eloScore);
-        case "rank":
-        default:
-          return b.eloScore - a.eloScore;
-      }
-    });
-
-  // Check if any players meet the minimum games requirement
+  // Players with at least 5 games that are active
   const playersWithMinimumGames = filteredPlayers.filter(
     (player) => player.isActive && player.wins + player.losses >= 5
   );
-  const hasPlayersWithMinimumGames = playersWithMinimumGames.length > 0;
+
+  // Players with fewer than 5 games that are active
+  const playersWithoutMinimumGames = filteredPlayers.filter(
+    (player) =>
+      player.isActive &&
+      player.wins + player.losses > 0 &&
+      player.wins + player.losses < 5
+  );
+
+  const sortedPlayers = [...playersWithMinimumGames].sort((a, b) => {
+    switch (sortBy) {
+      case "matches":
+        return b.wins - a.wins;
+      case "peak":
+        return b.highestElo - a.highestElo;
+      case "endSeason":
+        // For season stats, finalElo is the end of season SR
+        // Note: if finalElo is null (ongoing season), use current eloScore
+        return (b.finalElo || b.eloScore) - (a.finalElo || a.eloScore);
+      case "rank":
+      default:
+        return b.eloScore - a.eloScore;
+    }
+  });
 
   const handleClick = (
     newSortBy: "rank" | "matches" | "peak" | "endSeason"
@@ -157,7 +162,7 @@ export default function Page() {
 
       {/* Cards Container */}
       <div className="flex flex-col gap-4 pt-4">
-        {hasPlayersWithMinimumGames ? (
+        {playersWithMinimumGames.length > 0 ? (
           sortedPlayers.map((player, index) => (
             <NameCard
               key={player.id}
@@ -256,6 +261,33 @@ export default function Page() {
           </ul>
         </div>
       </div>
+
+      {/* Players with fewer than 5 games */}
+      {playersWithoutMinimumGames.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <div className="divider">Players Not Yet Ranked</div>
+          <div className="text-center mb-4">
+            <p className="text-base-content/70">
+              Players need a minimum of 5 games to appear in the rankings.
+            </p>
+          </div>
+          {playersWithoutMinimumGames.map((player) => (
+            <div
+              key={player.id}
+              className="card bg-base-200 shadow-sm w-11/12 mx-auto"
+            >
+              <div className="card-body p-4 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="text-xl font-medium">{player.name}</div>
+                </div>
+                <div className="text-lg">
+                  {player.wins + player.losses} / 5 games played
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
